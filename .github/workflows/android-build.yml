@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,3 +38,15 @@ jobs:
         with:
           name: pca-exam-review-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk pca-exam-review.apk
+
+      - uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: latest
+          name: Latest APK build
+          body: |
+            Debug APK built automatically from commit ${{ github.sha }}.
+            Download `pca-exam-review.apk` below and sideload it onto your device.
+          files: pca-exam-review.apk

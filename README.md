@@ -48,9 +48,11 @@ dev/preview server).
 
 **CI builds:** every push to `main` (or a manual "Run workflow" trigger) runs
 [.github/workflows/android-build.yml](.github/workflows/android-build.yml),
-which builds the APK on GitHub's runners and uploads it as the
-`pca-exam-review-debug-apk` artifact — download it from the run's page under
-the repo's Actions tab. No local toolchain needed.
+which builds the APK on GitHub's runners and publishes it to the rolling
+**`latest` release** — grab `pca-exam-review.apk` from the repo's Releases
+page anytime. The APK is also attached to each run as the
+`pca-exam-review-debug-apk` artifact (expires after 90 days). No local
+toolchain needed.
 
 To rebuild the APK locally instead:
 
