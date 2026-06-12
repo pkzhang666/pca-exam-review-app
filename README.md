@@ -37,3 +37,31 @@ Then open the printed local URL in your browser.
 ```bash
 npm run build
 ```
+
+## Android app
+
+The app is wrapped as a native Android app with [Capacitor](https://capacitorjs.com)
+(config in [capacitor.config.ts](capacitor.config.ts), native project in
+[android/](android/)). Progress on Android is saved via the WebView's
+`localStorage` (the `/api/progress` file persistence only applies to the
+dev/preview server).
+
+**CI builds:** every push to `main` (or a manual "Run workflow" trigger) runs
+[.github/workflows/android-build.yml](.github/workflows/android-build.yml),
+which builds the APK on GitHub's runners and uploads it as the
+`pca-exam-review-debug-apk` artifact — download it from the run's page under
+the repo's Actions tab. No local toolchain needed.
+
+To rebuild the APK locally instead:
+
+```bash
+npm run android:build
+```
+
+This produces `android/app/build/outputs/apk/debug/app-debug.apk`, which can
+be sideloaded directly onto a device (enable "Install unknown apps" on the
+phone). Requires JDK 21 and an Android SDK — either via Android Studio, or
+set `JAVA_HOME` and `ANDROID_HOME` to standalone installs.
+
+The debug APK is fine for personal use. For Play Store distribution you'd
+need a signed release build (`./gradlew bundleRelease` with a signing key).

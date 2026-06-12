@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PCA Exam Review</string>
+    <string name="title_activity_main">PCA Exam Review</string>
+    <string name="package_name">com.pengkun.pcaexamreview</string>
+    <string name="custom_url_scheme">com.pengkun.pcaexamreview</string>
+</resources>

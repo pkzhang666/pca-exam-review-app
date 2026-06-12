@@ -25,3 +25,4 @@ progress.json
 *.njsproj
 *.sln
 *.sw?
+*.apk
