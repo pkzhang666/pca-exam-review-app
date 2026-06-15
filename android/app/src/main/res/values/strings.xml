@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">QuizForge</string>
     <string name="title_activity_main">QuizForge</string>
-    <string name="package_name">com.pengkun.pcaexamreview</string>
-    <string name="custom_url_scheme">com.pengkun.pcaexamreview</string>
+    <string name="package_name">com.pengkun.quizforge</string>
+    <string name="custom_url_scheme">com.pengkun.quizforge</string>
 </resources>

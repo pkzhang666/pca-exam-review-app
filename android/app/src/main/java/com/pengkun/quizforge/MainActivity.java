@@ -1,4 +1,4 @@
-package com.pengkun.pcaexamreview;
+package com.pengkun.quizforge;
 
 import com.getcapacitor.BridgeActivity;
 

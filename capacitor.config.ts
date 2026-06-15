@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.pengkun.pcaexamreview',
+  appId: 'com.pengkun.quizforge',
   appName: 'QuizForge',
   webDir: 'dist',
 };
