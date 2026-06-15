@@ -23,3 +23,28 @@ export interface QuestionProgress {
 export type ProgressMap = Record<number, QuestionProgress>;
 
 export type FilterOption = 'all' | 'unanswered' | 'correct' | 'wrong';
+
+// --- Decks (server-side) ---------------------------------------------------
+
+export type DeckStatus = 'processing' | 'ready' | 'failed';
+export type DeckVisibility = 'private' | 'shared';
+
+export interface DeckMeta {
+  id: string;
+  ownerUid: string;
+  ownerEmail: string;
+  name: string;
+  sourceFilename: string;
+  pageCount: number;
+  status: DeckStatus;
+  visibility: DeckVisibility;
+  questionCount: number;
+  chunksDone: number;
+  chunksTotal: number;
+  createdAt: string;
+  error?: string;
+}
+
+export interface Deck extends DeckMeta {
+  questions: Question[];
+}

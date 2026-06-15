@@ -27,7 +27,11 @@ jobs:
 
       - run: npm ci
 
+      # Build the offline, self-contained study app for Android (bundles the
+      # corrected questions.json; no backend needed).
       - run: npm run build
+        env:
+          VITE_STANDALONE: 'true'
 
       - run: npx cap sync android
 
