@@ -35,14 +35,28 @@ jobs:
 
       - run: npx cap sync android
 
-      - run: ./gradlew assembleDebug
+      # Decode the stable release keystore from the repository secret.
+      # This ensures every build is signed with the same key so users can
+      # install updates over previous versions without uninstalling first.
+      - name: Decode release keystore
+        run: echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease
         working-directory: android
+        env:
+          KEYSTORE_PATH: app/release.jks
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       # Date-based version, e.g. 2026.06.15.1642 (unique per minute).
       - id: ver
         run: echo "v=$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
 
-      - run: cp android/app/build/outputs/apk/debug/app-debug.apk QuizForge-${{ steps.ver.outputs.v }}.apk
+      - run: cp android/app/build/outputs/apk/release/app-release.apk QuizForge-${{ steps.ver.outputs.v }}.apk
 
       - uses: actions/upload-artifact@v4
         with:
