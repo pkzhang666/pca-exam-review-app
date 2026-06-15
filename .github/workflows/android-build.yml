@@ -47,7 +47,7 @@ jobs:
         run: ./gradlew assembleRelease
         working-directory: android
         env:
-          KEYSTORE_PATH: app/release.jks
+          KEYSTORE_PATH: ${{ github.workspace }}/android/app/release.jks
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
