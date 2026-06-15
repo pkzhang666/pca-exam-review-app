@@ -8,6 +8,8 @@ interface SidePanelProps {
   filter: FilterOption;
   reviewMode: boolean;
   selectedId: number | null;
+  deckName?: string;
+  onBack?: () => void;
   onSelect: (id: number) => void;
   onFilterChange: (f: FilterOption) => void;
   onToggleReviewMode: () => void;
@@ -29,6 +31,8 @@ export function SidePanel({
   filter,
   reviewMode,
   selectedId,
+  deckName,
+  onBack,
   onSelect,
   onFilterChange,
   onToggleReviewMode,
@@ -39,8 +43,15 @@ export function SidePanel({
   return (
     <aside className="side-panel">
       <div className="side-panel-header">
-        <h1>PCA Exam Review</h1>
-        <p className="subtitle">Professional Cloud Architect practice questions</p>
+        {onBack && (
+          <button type="button" className="back-button" onClick={onBack}>
+            ← All decks
+          </button>
+        )}
+        <h1>{deckName ?? 'PCA Exam Review'}</h1>
+        <p className="subtitle">
+          {deckName ? 'Study deck' : 'Professional Cloud Architect practice questions'}
+        </p>
       </div>
 
       <div className="stats">

@@ -1,0 +1,30 @@
+# Local emulators for development. Run `docker compose up` here, then start the
+# backend on the host with `npm run dev` (it reads .env.local). The backend
+# talks to these via FIRESTORE_EMULATOR_HOST and STORAGE_EMULATOR_HOST.
+services:
+  firestore:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    command:
+      - gcloud
+      - beta
+      - emulators
+      - firestore
+      - start
+      - --host-port=0.0.0.0:8085
+      - --project=local-dev
+    ports:
+      - "8085:8085"
+
+  gcs:
+    image: fsouza/fake-gcs-server
+    command:
+      - -scheme
+      - http
+      - -host
+      - 0.0.0.0
+      - -port
+      - "4443"
+      - -public-host
+      - localhost:4443
+    ports:
+      - "4443:4443"

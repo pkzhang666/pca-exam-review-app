@@ -5,16 +5,22 @@ interface QuestionViewProps {
   question: Question | null;
   progress: QuestionProgress;
   reviewMode: boolean;
+  total?: number;
+  hasNext?: boolean;
   onToggleOption: (questionId: number, optionKey: string) => void;
   onSubmit: (questionId: number) => void;
+  onNext?: () => void;
 }
 
 export function QuestionView({
   question,
   progress,
   reviewMode,
+  total,
+  hasNext,
   onToggleOption,
   onSubmit,
+  onNext,
 }: QuestionViewProps) {
   if (!question) {
     return (
@@ -33,7 +39,10 @@ export function QuestionView({
     <main className="question-view">
       <div className="question-header">
         <span className="badge">{question.category}</span>
-        <span className="question-number">Question {question.id} of 277</span>
+        <span className="question-number">
+          Question {question.id}
+          {total ? ` of ${total}` : ''}
+        </span>
         {isMultiSelect && (
           <span className="badge badge-muted">Choose {question.answerCount}</span>
         )}
@@ -89,6 +98,19 @@ export function QuestionView({
       )}
 
       {showBreakdown && <AnswerBreakdown question={question} progress={progress} />}
+
+      {onNext && (
+        <div className="question-nav">
+          <button
+            type="button"
+            className="next-button"
+            disabled={!hasNext}
+            onClick={onNext}
+          >
+            Next question →
+          </button>
+        </div>
+      )}
     </main>
   );
 }

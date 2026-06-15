@@ -1,0 +1,33 @@
+# Copy to terraform.tfvars and fill in. Do NOT commit terraform.tfvars.
+project_id = "your-gcp-project"
+region     = "us-central1"
+
+# Build & push first (see infra/README.md), then set the pushed tag here:
+image = "us-central1-docker.pkg.dev/your-gcp-project/pca-quiz/backend:v1"
+
+# LLM provider — set ONE of these (Gemini is cheaper). Provider auto-detects
+# from whichever key is present; force it with llm_provider if you set both.
+gemini_api_key    = "AIza..."
+anthropic_api_key = ""
+# llm_provider    = "gemini"   # optional: "anthropic" | "gemini"
+# gemini_model    = "gemini-2.5-flash"
+
+task_secret = "generate-a-long-random-string"
+
+# Invite-only access (set at least one of emails/domains)
+allowed_emails  = ["you@gmail.com"]
+allowed_domains = []
+
+# CORS — the origin(s) the frontend is served from
+allowed_origins = ["https://your-app.web.app"]
+
+# Quotas
+daily_deck_cap     = 50
+per_user_daily_cap = 5
+
+# Set false if the project already has a (default) Firestore database.
+create_firestore = true
+
+# Optional budget alert (leave billing_account empty to skip)
+billing_account    = ""
+monthly_budget_usd = 50
