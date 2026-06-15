@@ -38,19 +38,24 @@ jobs:
       - run: ./gradlew assembleDebug
         working-directory: android
 
+      # Date-based version, e.g. 2026.06.15.1642 (unique per minute).
+      - id: ver
+        run: echo "v=$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
+
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk QuizForge-${{ steps.ver.outputs.v }}.apk
+
       - uses: actions/upload-artifact@v4
         with:
-          name: pca-exam-review-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: QuizForge-${{ steps.ver.outputs.v }}
+          path: QuizForge-${{ steps.ver.outputs.v }}.apk
 
-      - run: cp android/app/build/outputs/apk/debug/app-debug.apk pca-exam-review.apk
-
+      # New release per build (versioned by date) — does not replace prior ones.
       - uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: latest
-          name: Latest APK build
+          tag_name: v${{ steps.ver.outputs.v }}
+          name: QuizForge ${{ steps.ver.outputs.v }}
           body: |
-            Debug APK built automatically from commit ${{ github.sha }}.
-            Download `pca-exam-review.apk` below and sideload it onto your device.
-          files: pca-exam-review.apk
+            QuizForge Android APK — version ${{ steps.ver.outputs.v }}
+            Built from commit ${{ github.sha }}. Download the .apk below and sideload it.
+          files: QuizForge-${{ steps.ver.outputs.v }}.apk
