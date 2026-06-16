@@ -1,22 +1,13 @@
 # Screenshots
 
-The root README references images here. The `.svg` files are **placeholders** —
-replace them with real screenshots of the running web app.
-
-## What the README expects
+Images shown in the root [README.md](../../README.md).
 
 | File | Screen |
 |------|--------|
-| `deck-list.svg` (or `.png`) | The deck library / home screen with the upload control |
-| `study-question.svg` (or `.png`) | A graded question in the study view (showing the Next button) |
+| `deck-list.png` | The deck library / home screen with the upload control |
+| `study-question.png` | A graded question in the study view (showing the Next button) |
 
-Two ways to swap them in:
-
-1. **Easiest:** drop `deck-list.png` and `study-question.png` here, then change the
-   two `src="docs/screenshots/*.svg"` references in the root [README.md](../../README.md)
-   to `*.png`.
-2. Or just overwrite the `.svg` files (keep the same names) and leave the README
-   as‑is.
+To refresh them, overwrite these PNGs with new captures (keep the same names).
 
 ## Capturing the real screenshots
 

@@ -77,13 +77,10 @@ flowchart LR
 
 ## Screenshots
 
-> These are placeholders. Drop real PNGs into [`docs/screenshots/`](docs/screenshots/)
-> (see that folder's README) to replace them.
-
 <table>
   <tr>
-    <td><img src="docs/screenshots/deck-list.svg" width="400" alt="Deck library"/></td>
-    <td><img src="docs/screenshots/study-question.svg" width="400" alt="Studying a question"/></td>
+    <td><img src="docs/screenshots/deck-list.png" width="400" alt="Deck library"/></td>
+    <td><img src="docs/screenshots/study-question.png" width="400" alt="Studying a question"/></td>
   </tr>
   <tr>
     <td align="center"><b>Deck library</b> — your decks + shared, upload a PDF</td>
