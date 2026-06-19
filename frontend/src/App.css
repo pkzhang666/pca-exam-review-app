@@ -260,6 +260,22 @@
   border: 1px solid var(--border);
 }
 
+.badge-warn {
+  background: #fef3c7;
+  color: #92400e;
+  cursor: help;
+}
+
+.review-note {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
 .question-number {
   font-size: 13px;
   color: var(--text-muted);

@@ -18,6 +18,11 @@ export interface Question {
   answerCount: number;
   correctAnswer: string[];
   optionExplanations: Record<string, string>;
+  // Set by the answer-grading pass (VERIFY_ANSWERS) when an independent grader
+  // disagrees with the generated answer key. The key is left untouched; the UI
+  // surfaces these so a human can double-check.
+  needsReview?: boolean;
+  reviewNote?: string;
 }
 
 export type DeckStatus = "processing" | "ready" | "failed";
@@ -88,6 +93,20 @@ export const ChunkResultSchema = z.object({
 });
 
 export type GenQuestion = z.infer<typeof GenQuestionSchema>;
+
+/** Cheap, deterministic checks that catch malformed questions before they reach
+ *  the study UI (e.g. a question with no correct option is unanswerable). Returns
+ *  a list of human-readable issues; an empty list means the question is usable. */
+export function structuralIssues(gen: GenQuestion): string[] {
+  const issues: string[] = [];
+  if (!gen.text?.trim()) issues.push("empty question text");
+  if (gen.options.length < 2) issues.push("fewer than 2 options");
+  const keys = gen.options.map((o) => o.key);
+  if (new Set(keys).size !== keys.length) issues.push("duplicate option keys");
+  if (!gen.options.some((o) => o.correct)) issues.push("no correct option marked");
+  if (gen.options.some((o) => !o.text?.trim())) issues.push("empty option text");
+  return issues;
+}
 
 /** Fold a model-generated question into the frontend `Question` shape. */
 export function toQuestion(gen: GenQuestion, id: number): Question {

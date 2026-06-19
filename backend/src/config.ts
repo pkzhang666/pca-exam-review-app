@@ -81,6 +81,14 @@ export const config = {
   questionsPerChunk: intEnv("QUESTIONS_PER_CHUNK", 5), // mock mode only
 
   genConcurrency: intEnv("GEN_CONCURRENCY", 4),
+
+  // Answer grading: a second, independent Claude pass re-derives each question's
+  // answer and flags (does not change) any that disagree with the generated key.
+  // Off by default; requires ANTHROPIC_API_KEY regardless of the generation provider.
+  verifyAnswers: boolEnv("VERIFY_ANSWERS", false),
+  verifyModel: env("VERIFY_MODEL", "claude-opus-4-8"),
+  verifyBatchSize: intEnv("VERIFY_BATCH_SIZE", 5), // questions graded per LLM call
+  verifyConcurrency: intEnv("VERIFY_CONCURRENCY", 3),
   dailyDeckCap: intEnv("DAILY_DECK_CAP", 50), // global decks/day
   perUserDailyCap: intEnv("PER_USER_DAILY_CAP", 5), // decks/day per user
   maxUploadBytes: intEnv("MAX_UPLOAD_BYTES", 150 * 1024 * 1024),

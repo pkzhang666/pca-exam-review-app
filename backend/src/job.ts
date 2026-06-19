@@ -1,7 +1,8 @@
 import { config } from "./config";
-import { Question, toQuestion } from "./types";
+import { Question, toQuestion, structuralIssues } from "./types";
 import { mapWithConcurrency, splitPdf } from "./pdf";
 import { generateForChunk } from "./generate";
+import { verifyAndFlag } from "./verify";
 import {
   deletePdf,
   downloadPdf,
@@ -28,17 +29,32 @@ export async function runGeneration(deckId: string): Promise<void> {
     return questions;
   });
 
+  // Drop structurally broken questions (no correct option, <2 options, etc.)
+  // before they reach the study UI.
   const questions: Question[] = [];
   let nextId = 1;
+  let dropped = 0;
   for (const list of perChunk) {
-    for (const gen of list) questions.push(toQuestion(gen, nextId++));
+    for (const gen of list) {
+      if (structuralIssues(gen).length > 0) {
+        dropped++;
+        continue;
+      }
+      questions.push(toQuestion(gen, nextId++));
+    }
   }
+  if (dropped > 0) console.warn(`deck ${deckId}: dropped ${dropped} malformed question(s)`);
 
   if (questions.length === 0) {
     await setDeckStatus(deckId, "failed", {
       error: "No testable content found in the document.",
     });
   } else {
+    // Optional second pass: grade each answer key and flag disagreements.
+    if (config.verifyAnswers) {
+      const { checked, flagged } = await verifyAndFlag(questions);
+      console.log(`deck ${deckId}: graded ${checked} answer(s), flagged ${flagged} for review`);
+    }
     await saveQuestions(deckId, questions);
   }
   await deletePdf(deckId).catch(() => undefined);
