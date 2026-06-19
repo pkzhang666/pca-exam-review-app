@@ -16,19 +16,45 @@ function loadProgress(): ProgressMap {
   }
 }
 
+// How "meaningful" a single question's progress is. A submitted answer beats a
+// mere selection, which beats an untouched entry. Used to decide which copy to
+// keep when local and server disagree.
+function score(entry: QuestionProgress): number {
+  if (entry.status === 'correct' || entry.status === 'wrong') return 2;
+  if (entry.selected.length > 0) return 1;
+  return 0;
+}
+
+// Merge server-side progress.json into the in-browser copy without letting an
+// empty/stale server file clobber real local progress. For each question we
+// keep the richer of the two; on a tie we keep the local copy (it reflects the
+// answer the user most likely just made in this browser).
+function mergeProgress(local: ProgressMap, server: ProgressMap): ProgressMap {
+  const merged: ProgressMap = { ...local };
+  for (const [id, serverEntry] of Object.entries(server)) {
+    const localEntry = local[Number(id)];
+    if (!localEntry || score(serverEntry) > score(localEntry)) {
+      merged[Number(id)] = serverEntry;
+    }
+  }
+  return merged;
+}
+
 export function useProgress() {
   const [progress, setProgress] = useState<ProgressMap>(loadProgress);
   const [hydrated, setHydrated] = useState(false);
 
-  // On mount, prefer progress.json (saved in the project folder) over
-  // localStorage so progress travels with the project across machines.
+  // On mount, fold progress.json (saved in the project folder, so it travels
+  // with the project across machines) into the in-browser copy. We merge
+  // rather than overwrite so a stale/empty server file can't wipe local
+  // progress — and so a successful merge is then persisted back below.
   useEffect(() => {
     let cancelled = false;
     fetch('/api/progress')
       .then((res) => (res.ok ? (res.json() as Promise<ProgressMap>) : null))
       .then((data) => {
         if (cancelled || !data) return;
-        setProgress(data);
+        setProgress((prev) => mergeProgress(prev, data));
       })
       .catch(() => {})
       .finally(() => {

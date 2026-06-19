@@ -16,7 +16,7 @@ returns canned questions. You can exercise the whole upload → process → stud
 flow offline and for free.
 
 ```sh
-cd server
+cd backend
 npm install
 docker compose up -d            # Firestore + GCS emulators
 cp .env.local.example .env.local

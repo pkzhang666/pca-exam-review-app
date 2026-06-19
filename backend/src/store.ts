@@ -1,3 +1,5 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { Firestore, FieldValue } from "@google-cloud/firestore";
 import { Storage } from "@google-cloud/storage";
 import { CloudTasksClient } from "@google-cloud/tasks";
@@ -123,9 +125,45 @@ export async function getDeck(id: string): Promise<Deck | null> {
 
 const progressId = (uid: string, deckId: string) => `${uid}__${deckId}`;
 
+// Durable on-disk mirror of study progress. The local Firestore emulator is
+// in-memory, so its data vanishes on restart — this file is the backup of
+// record. Writes mirror here; reads self-heal Firestore from here when empty.
+// Keyed by `${uid}__${deckId}`. Gitignored (it's per-user data).
+const PROGRESS_BACKUP = resolve(__dirname, "../data/progress-backup.json");
+
+function loadProgressBackup(): Record<string, DeckProgress> {
+  try {
+    if (!existsSync(PROGRESS_BACKUP)) return {};
+    return JSON.parse(readFileSync(PROGRESS_BACKUP, "utf8")) as Record<string, DeckProgress>;
+  } catch {
+    return {};
+  }
+}
+
+function saveProgressBackup(data: Record<string, DeckProgress>): void {
+  try {
+    mkdirSync(dirname(PROGRESS_BACKUP), { recursive: true });
+    writeFileSync(PROGRESS_BACKUP, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.warn(
+      `progress backup write failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
 export async function getProgress(uid: string, deckId: string): Promise<DeckProgress | null> {
-  const snap = await progress.doc(progressId(uid, deckId)).get();
-  return snap.exists ? (snap.data() as DeckProgress) : null;
+  const id = progressId(uid, deckId);
+  const snap = await progress.doc(id).get();
+  if (snap.exists) return snap.data() as DeckProgress;
+
+  // Firestore has nothing (e.g. the emulator was wiped). Restore from the
+  // durable file backup if we have it, repopulating Firestore as we go.
+  const backup = loadProgressBackup()[id];
+  if (backup) {
+    await progress.doc(id).set(backup).catch(() => undefined);
+    return backup;
+  }
+  return null;
 }
 
 export async function putProgress(
@@ -133,13 +171,19 @@ export async function putProgress(
   deckId: string,
   answers: Record<string, QuestionProgress>,
 ): Promise<DeckProgress> {
+  const id = progressId(uid, deckId);
   const doc: DeckProgress = {
     uid,
     deckId,
     answers,
     updatedAt: new Date().toISOString(),
   };
-  await progress.doc(progressId(uid, deckId)).set(doc);
+  await progress.doc(id).set(doc);
+
+  // Mirror to the durable on-disk backup so progress survives emulator wipes.
+  const backup = loadProgressBackup();
+  backup[id] = doc;
+  saveProgressBackup(backup);
   return doc;
 }
 
