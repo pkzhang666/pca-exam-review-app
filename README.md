@@ -108,12 +108,13 @@ flowchart LR
 
 | Path | What it is |
 |------|------------|
-| [`src/`](src/) | Web app (React + Vite): deck list, PDF upload, study view |
-| [`server/`](server/) | Backend API (Cloud Run) — **[server/README.md](server/README.md)** |
+| [`frontend/`](frontend/) | Web app (React + Vite): deck list, PDF upload, study view |
+| [`frontend/android/`](frontend/android/) | Capacitor Android project (offline QuizForge build) |
+| [`backend/`](backend/) | Backend API (Cloud Run) — **[backend/README.md](backend/README.md)** |
 | [`infra/`](infra/) | Terraform for the backend — **[infra/README.md](infra/README.md)** |
-| [`android/`](android/) | Capacitor Android project (offline QuizForge build) |
 | [`.github/workflows/`](.github/workflows/) | CI: Android APK build + release |
-| [`src/data/questions.json`](src/data/questions.json) | The built‑in PCA question set |
+| [`frontend/src/data/questions.json`](frontend/src/data/questions.json) | The built‑in PCA question set |
+| [`Makefile`](Makefile) | `make dev` runs frontend + backend together |
 
 ## Quickstart
 
@@ -123,22 +124,26 @@ The backend runs against local emulators with a dev‑auth bypass and a
 mock‑generation mode, so you can exercise the whole flow offline and for free.
 
 ```bash
-# terminal 1 — backend + emulators
-cd server
+# one-time: start emulators + seed env for the backend
+cd backend
 npm install
 docker compose up -d            # Firestore + GCS emulators
 cp .env.local.example .env.local
-npm run dev                     # API on :8080
-
-# terminal 2 — web app
 cd ..
-npm install
-npm run dev                     # Vite on :5173
+
+# install web deps once
+cd frontend && npm install && cd ..
+
+# then, from the project root, run frontend + backend together:
+make dev                        # Vite on :5173, API on :8080
 ```
 
+`make dev` frees ports 5173/8080 first, then starts both and stops both on Ctrl+C.
+Prefer separate terminals? Use `make frontend` and `make backend`.
+
 Open http://localhost:5173. To generate **real** questions, put a `GEMINI_API_KEY`
-(or `ANTHROPIC_API_KEY`) in `server/.env.local` and set `MOCK_GENERATION=false`.
-Full details: [server/README.md](server/README.md).
+(or `ANTHROPIC_API_KEY`) in `backend/.env.local` and set `MOCK_GENERATION=false`.
+Full details: [backend/README.md](backend/README.md).
 
 ### Deploy the backend
 

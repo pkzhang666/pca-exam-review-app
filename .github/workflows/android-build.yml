@@ -18,6 +18,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - uses: actions/setup-java@v4
         with:
@@ -26,28 +27,31 @@ jobs:
           cache: gradle
 
       - run: npm ci
+        working-directory: frontend
 
       # Build the offline, self-contained study app for Android (bundles the
       # corrected questions.json; no backend needed).
       - run: npm run build
+        working-directory: frontend
         env:
           VITE_STANDALONE: 'true'
 
       - run: npx cap sync android
+        working-directory: frontend
 
       # Decode the stable release keystore from the repository secret.
       # This ensures every build is signed with the same key so users can
       # install updates over previous versions without uninstalling first.
       - name: Decode release keystore
-        run: echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+        run: echo "$KEYSTORE_BASE64" | base64 -d > frontend/android/app/release.jks
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
       - name: Build release APK
         run: ./gradlew assembleRelease
-        working-directory: android
+        working-directory: frontend/android
         env:
-          KEYSTORE_PATH: ${{ github.workspace }}/android/app/release.jks
+          KEYSTORE_PATH: ${{ github.workspace }}/frontend/android/app/release.jks
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -56,7 +60,7 @@ jobs:
       - id: ver
         run: echo "v=$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
 
-      - run: cp android/app/build/outputs/apk/release/app-release.apk QuizForge-${{ steps.ver.outputs.v }}.apk
+      - run: cp frontend/android/app/build/outputs/apk/release/app-release.apk QuizForge-${{ steps.ver.outputs.v }}.apk
 
       - uses: actions/upload-artifact@v4
         with:

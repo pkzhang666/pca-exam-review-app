@@ -28,7 +28,7 @@ REGION=us-central1
 PROJECT=$(gcloud config get-value project)
 IMAGE="$REGION-docker.pkg.dev/$PROJECT/pca-quiz/backend:v1"
 gcloud auth configure-docker "$REGION-docker.pkg.dev"
-docker build -t "$IMAGE" ../server
+docker build -t "$IMAGE" ../backend
 docker push "$IMAGE"
 
 # 3. Set `image = "..."` in terraform.tfvars to the tag you just pushed.
