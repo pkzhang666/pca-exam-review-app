@@ -11,6 +11,10 @@ export interface Question {
   answerCount: number;
   correctAnswer: string[];
   optionExplanations: Record<string, string>;
+  // Set by the backend answer-grading pass when an independent grader disagreed
+  // with this question's answer key. The key is unchanged; this just flags it.
+  needsReview?: boolean;
+  reviewNote?: string;
 }
 
 export type AnswerStatus = 'unanswered' | 'correct' | 'wrong';

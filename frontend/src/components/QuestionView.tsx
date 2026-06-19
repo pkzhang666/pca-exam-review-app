@@ -46,9 +46,18 @@ export function QuestionView({
         {isMultiSelect && (
           <span className="badge badge-muted">Choose {question.answerCount}</span>
         )}
+        {question.needsReview && (
+          <span className="badge badge-warn" title={question.reviewNote}>
+            ⚠ Review
+          </span>
+        )}
       </div>
 
       <h2 className="question-text">{question.text}</h2>
+
+      {question.needsReview && question.reviewNote && (
+        <p className="review-note">{question.reviewNote}</p>
+      )}
 
       <div className="options" role={isMultiSelect ? 'group' : 'radiogroup'}>
         {question.options.map((option) => {
