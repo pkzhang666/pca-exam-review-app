@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CCA-F Review</string>
+    <string name="title_activity_main">CCA-F Review</string>
+    <string name="package_name">com.pengkun.ccafreview</string>
+    <string name="custom_url_scheme">com.pengkun.ccafreview</string>
+</resources>

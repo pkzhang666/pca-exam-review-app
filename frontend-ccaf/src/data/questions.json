@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "category": "Agent SDK & Hooks",
+    "text": "A customer support agent built with the Claude Agent SDK occasionally skips an identity verification step before processing refund requests, leading to unauthorized refunds in ~8% of interactions. The team has already added system-prompt instructions emphasizing verification. What is the most effective way to ensure the verification step always occurs before refund processing?",
+    "options": [
+      { "key": "A", "text": "Implement a PreToolUse hook that blocks the process_refund tool until get_customer has returned a verified customer ID" },
+      { "key": "B", "text": "Add more emphatic language to the system prompt requiring verification before any financial operation" },
+      { "key": "C", "text": "Create a separate verification subagent that runs independently before the main support agent" },
+      { "key": "D", "text": "Configure tool_choice to force the get_customer tool on every interaction" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A PreToolUse hook is deterministic code that runs before a tool executes, so it can block process_refund until it confirms get_customer has returned a verified ID. Prompt-based guidance (B) is probabilistic and has a non-zero failure rate — unacceptable for a financial action. A separate subagent (C) adds complexity without guaranteeing ordering. Forcing get_customer on every turn (D) breaks normal conversation and still doesn't gate the refund tool specifically.",
+    "corrected": false
+  },
+  {
+    "id": 2,
+    "category": "Multi-Agent Systems",
+    "text": "A multi-agent research system has a coordinator delegating to three subagents: web_search, document_analysis, and synthesis. The synthesis subagent produces reports lacking the web_search agent's findings, even though the coordinator receives all subagents' results correctly. What is the most likely cause?",
+    "options": [
+      { "key": "A", "text": "The coordinator is not passing the complete web_search findings into the synthesis subagent's prompt context" },
+      { "key": "B", "text": "The synthesis subagent's system prompt needs more explicit instructions about including all sources" },
+      { "key": "C", "text": "The web_search subagent returns results in a format incompatible with the synthesis subagent" },
+      { "key": "D", "text": "The synthesis subagent needs the web_search tool to verify findings independently" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Subagents run in isolated contexts — they do not automatically inherit the coordinator's conversation or other subagents' outputs. If the coordinator doesn't explicitly include the web_search findings in the synthesis subagent's prompt, that information simply isn't available to it. Better prompting (B) can't surface data the subagent never received; a format issue (C) is unlikely since the coordinator parsed the results fine; giving synthesis its own search tool (D) violates least privilege and re-does work.",
+    "corrected": false
+  },
+  {
+    "id": 3,
+    "category": "Claude API",
+    "text": "An architect is designing an agentic loop with the Claude API that must handle tool calls, detect completion, and manage errors. Which combination of stop_reason values correctly identifies when to continue the loop versus exit?",
+    "options": [
+      { "key": "A", "text": "Continue on 'tool_use' or 'end_turn'; exit on 'max_tokens' or 'refusal'" },
+      { "key": "B", "text": "Continue on 'tool_use' or 'max_tokens'; exit on 'end_turn' or 'stop_sequence'" },
+      { "key": "C", "text": "Continue on 'tool_use'; exit only on 'end_turn'" },
+      { "key": "D", "text": "Continue on 'tool_use'; exit on 'end_turn', 'max_tokens', 'refusal', or 'stop_sequence'" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "The loop should continue only when Claude wants to run a tool ('tool_use'); every other terminal stop_reason means stop and handle it: 'end_turn' (done), 'max_tokens' (truncated — handle/retry), 'refusal' (declined), 'stop_sequence' (hit a custom stop). (Note: server-side tools can also return 'pause_turn', which you resume.) B is wrong because 'max_tokens' is truncation, not a tool request; C ignores error/limit conditions.",
+    "corrected": false
+  },
+  {
+    "id": 4,
+    "category": "Multi-Agent Systems",
+    "text": "A code-review system generates code and then validates it. When the same Claude session both generates code and reviews it, the reviews are less critical than when a separate session does the review. What architectural change most effectively addresses this bias?",
+    "options": [
+      { "key": "A", "text": "Add stronger instructions in the review prompt to be critical and thorough" },
+      { "key": "B", "text": "Use a separate Claude instance without the generation context to perform the review" },
+      { "key": "C", "text": "Implement a multi-pass review within the same session with explicit self-critique prompts" },
+      { "key": "D", "text": "Increase the temperature parameter during the review phase to encourage diverse perspectives" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "A reviewer that carries the generation context tends to rationalize its own work, so an independent instance with a clean context gives a more objective review. Stronger instructions (A) don't remove the underlying context bias; staying in the same session (C) keeps the contaminating context; temperature (D) affects randomness, not objectivity — and on current Claude models temperature isn't even an available knob.",
+    "corrected": false
+  },
+  {
+    "id": 5,
+    "category": "Multi-Agent Systems",
+    "text": "A coordinator manages three research subagents investigating 'AI applications in creative industries.' All three covered visual arts extensively but missed music, creative writing, and film entirely. Each subagent executed its assigned task correctly and thoroughly. What is the root cause of this gap?",
+    "options": [
+      { "key": "A", "text": "The subagents need larger context windows to cover more topics" },
+      { "key": "B", "text": "The subagents should have web search tools to discover additional creative domains" },
+      { "key": "C", "text": "The synthesis step should have identified and requested additional research on missing topics" },
+      { "key": "D", "text": "The coordinator's task decomposition was too narrow, limiting scope to visual arts subtopics" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "When subagents do their assigned work correctly but the overall output has coverage gaps, the failure is upstream at task decomposition: the coordinator carved the problem into three visual-arts subtopics instead of distributing across the full creative-industries space. Context size (A) doesn't affect assigned scope; tools (B) don't fix scoping; a synthesis fix (C) only patches the symptom after the narrow research is done.",
+    "corrected": false
+  },
+  {
+    "id": 6,
+    "category": "Claude Code",
+    "text": "An architect needs two analysis paths that explore different hypotheses from the same shared baseline data. The paths must be independent but start from identical context. Which capability best supports this?",
+    "options": [
+      { "key": "A", "text": "Create two separate sessions and manually copy the baseline data into each" },
+      { "key": "B", "text": "Use session forking to create independent branches from the shared baseline" },
+      { "key": "C", "text": "Use agent teams with a shared task list to coordinate the investigation" },
+      { "key": "D", "text": "Run both analyses sequentially in the same session with context-separation prompts" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Forking a session produces independent branches that start from identical accumulated context but then diverge — exactly the 'shared baseline, independent exploration' pattern. Manually copying into two sessions (A) is error-prone and risks drift. Agent teams (C) are for collaborative, communicating work, not isolated divergent exploration. Sequential runs in one session (D) lose parallelism and risk cross-contamination between the two analyses.",
+    "corrected": false
+  },
+  {
+    "id": 7,
+    "category": "Multi-Agent Systems",
+    "text": "A support agent must handle multi-concern messages (e.g., a billing dispute AND a feature question in one message). Currently it addresses only the first concern. What is the recommended approach?",
+    "options": [
+      { "key": "A", "text": "Instruct the agent to process both concerns in sequence within a single response" },
+      { "key": "B", "text": "Route the message to two different specialized agents simultaneously" },
+      { "key": "C", "text": "Decompose the multi-concern request into distinct items and investigate each in parallel" },
+      { "key": "D", "text": "Ask the customer to submit separate tickets for each concern" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Explicitly decomposing the message into separate concern-items and handling each (in parallel) ensures full coverage and avoids the attention-dilution that causes later concerns to be dropped. Sequential handling in one response (A) is prone to the same dilution; blind dual-routing (B) skips the decomposition that identifies all concerns; pushing the work back to the customer (D) is a poor experience and doesn't solve the technical gap.",
+    "corrected": false
+  },
+  {
+    "id": 8,
+    "category": "Agent SDK & Hooks",
+    "text": "Using Claude Agent SDK hooks, a developer wants to enforce that refunds over $500 require manager approval. Which hook configuration correctly implements this?",
+    "options": [
+      { "key": "A", "text": "A PostToolUse hook on process_refund that reverses transactions over $500" },
+      { "key": "B", "text": "A SessionStart hook that sets a global $500 limit for all financial operations" },
+      { "key": "C", "text": "A system-prompt instruction specifying the $500 threshold with examples" },
+      { "key": "D", "text": "A PreToolUse hook on process_refund that denies the call when the amount exceeds $500" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "A PreToolUse hook intercepts the call before it runs, inspects the amount argument, and denies (with feedback) when it exceeds $500 — stopping the refund before any money moves. PostToolUse (A) only fires after the refund already executed. A SessionStart hook (B) can't evaluate per-call arguments. A prompt instruction (C) is probabilistic and unsuitable for a hard financial control.",
+    "corrected": false
+  },
+  {
+    "id": 9,
+    "category": "Claude Code",
+    "text": "A team resumes a Claude Code session after making significant code changes outside the session. The agent gives recommendations based on the previous, now-stale code state. What is the most reliable approach for accurate responses?",
+    "options": [
+      { "key": "A", "text": "Use --resume with the session ID and immediately ask Claude to re-read all changed files" },
+      { "key": "B", "text": "Fork the previous session and provide a diff of all changes since the last interaction" },
+      { "key": "C", "text": "Use --continue to load the most recent session with updated file context" },
+      { "key": "D", "text": "Start a fresh session with a structured summary of prior findings and the current code state" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "When code has changed substantially outside the session, the old session's tool results and reasoning are based on outdated files. Starting fresh with a concise summary of prior findings plus the current state gives Claude a clean, accurate basis. Resuming or continuing (A, C) re-loads a reasoning chain anchored to stale code; forking with a diff (B) still carries the stale baseline context forward.",
+    "corrected": false
+  },
+  {
+    "id": 10,
+    "category": "Agent Design",
+    "text": "A support agent handles tickets ranging from simple password resets (70% of volume) to complex multi-system outage investigations (5%). Should it use adaptive decomposition or a fixed sequential pipeline?",
+    "options": [
+      { "key": "A", "text": "Fixed sequential pipeline — apply the same thorough process to every ticket for consistency" },
+      { "key": "B", "text": "A single adaptive agent with a mandatory initial classification step before any processing" },
+      { "key": "C", "text": "Two separate agents: one fixed pipeline for simple tickets, one adaptive for complex tickets" },
+      { "key": "D", "text": "Adaptive decomposition — generate subtasks dynamically based on what's discovered at each step" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "When complexity varies widely, adaptive decomposition lets simple tickets resolve in one or two steps while complex ones trigger deeper, dynamically-generated investigation — matching effort to the task. A fixed pipeline (A) wastes work on the 70% simple cases. Two separate agents (C) add operational overhead and a routing decision. A mandatory classification gate (B) is close but unnecessarily rigid — an adaptive agent can scale depth without a hard gate.",
+    "corrected": false
+  },
+  {
+    "id": 11,
+    "category": "MCP & Tools",
+    "text": "An MCP server exposes 18 tools to a support agent. The agent frequently confuses get_order_status with get_order_details and check_shipping with track_package. What is the most effective solution?",
+    "options": [
+      { "key": "A", "text": "Add retry logic that detects incorrect tool selection and re-routes to the correct tool" },
+      { "key": "B", "text": "Use tool_choice to force specific tools based on keywords in the customer message" },
+      { "key": "C", "text": "Consolidate overlapping tools and expand descriptions with clear differentiators" },
+      { "key": "D", "text": "Provide few-shot examples of correct tool selection for each disambiguation case" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Too many tools plus thin, overlapping descriptions is the root cause of misrouting — Claude selects tools primarily from their descriptions. Consolidating near-duplicate tools and writing descriptions that state exactly when to use each (and when not to) fixes the cause. Retry/re-routing (A) treats the symptom; keyword-forced tool_choice (B) bypasses Claude's reasoning and is brittle; few-shot examples (D) help but don't fix the structural problem of 18 vaguely-described tools.",
+    "corrected": false
+  },
+  {
+    "id": 12,
+    "category": "MCP & Tools",
+    "text": "An MCP tool for customer returns accepts a JSON object with nested fields (order_id, return_reason, item_conditions, refund_method). Agents frequently malform the nested item_conditions array. Which tool-definition improvement most reduces input errors?",
+    "options": [
+      { "key": "A", "text": "Add validation inside the tool that rejects malformed inputs with helpful error messages" },
+      { "key": "B", "text": "Include input examples in the tool definition showing correctly structured nested objects" },
+      { "key": "C", "text": "Simplify the tool to accept only flat string parameters instead of nested objects" },
+      { "key": "D", "text": "Split the tool into separate tools for each parameter to eliminate nesting" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Concrete examples of correctly-structured input are the most effective way to get Claude to produce well-formed nested arguments — they show the exact shape rather than describing it. In-tool validation (A) only catches errors after they happen; flattening (C) sacrifices the data model; splitting into many tools (D) causes tool-proliferation that itself degrades selection. (A robust design often pairs B with A as a safety net.)",
+    "corrected": false
+  },
+  {
+    "id": 13,
+    "category": "Claude API",
+    "text": "A document-extraction pipeline must always call extract_metadata first, but subsequent steps should let Claude choose tools based on content. Which tool_choice sequence is correct?",
+    "options": [
+      { "key": "A", "text": "Use {\"type\":\"tool\",\"name\":\"extract_metadata\"} on the first request, then switch to \"auto\"" },
+      { "key": "B", "text": "Use \"any\" on the first request to guarantee a tool call, then \"auto\"" },
+      { "key": "C", "text": "Use \"auto\" throughout and instruct the model to always start with extract_metadata" },
+      { "key": "D", "text": "Use \"none\" on the first request to let Claude plan, then \"auto\"" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Forcing the specific tool ({type:'tool', name:'extract_metadata'}) on the first request guarantees that exact tool runs first; switching to 'auto' afterward lets Claude reason about subsequent calls. 'any' (B) guarantees some tool but not which one; 'auto' + a prompt instruction (C) is only probabilistic; 'none' (D) forbids tools on turn one, the opposite of the requirement.",
+    "corrected": false
+  },
+  {
+    "id": 14,
+    "category": "MCP & Tools",
+    "text": "A multi-agent system's web_search subagent times out against an external API. The coordinator receives a generic 'Operation failed' and terminates the whole workflow. How should error handling be improved?",
+    "options": [
+      { "key": "A", "text": "The coordinator should catch all errors and silently proceed without the web results" },
+      { "key": "B", "text": "The subagent should automatically retry three times before reporting failure" },
+      { "key": "C", "text": "The subagent should return structured error context: failure type, attempted query, partial results, and alternative approaches" },
+      { "key": "D", "text": "The system should fall back to cached results from previous queries" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Structured error context lets the coordinator make an informed recovery decision — retry, delegate elsewhere, or proceed with partial results — instead of aborting on an opaque failure. Blind retries (B) help only for transient errors and still give the coordinator no decision context. Silently proceeding (A) hides real failures. Cached fallback (D) risks serving stale or irrelevant data without signaling that it did so.",
+    "corrected": false
+  },
+  {
+    "id": 15,
+    "category": "Claude Code",
+    "text": "A team wants to share MCP server configurations across all developers while letting individuals also use personal experimental MCP servers. Where should each configuration go?",
+    "options": [
+      { "key": "A", "text": "Team config in CLAUDE.md; personal config in ~/.claude/CLAUDE.md" },
+      { "key": "B", "text": "Team config in .mcp.json at the project root; personal config in user-level settings" },
+      { "key": "C", "text": "Team config in .claude/settings.json; personal config in environment variables" },
+      { "key": "D", "text": "Both in .mcp.json with conditional loading based on the developer's username" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Project-scoped MCP servers belong in a version-controlled .mcp.json at the repo root so the whole team gets them; personal/experimental servers belong in the developer's user-level config, which isn't committed. CLAUDE.md (A) is for instructions/memory, not MCP server definitions. Settings + env vars (C) and username-conditional loading (D) are non-standard and brittle.",
+    "corrected": false
+  },
+  {
+    "id": 16,
+    "category": "Claude Code",
+    "text": "A monorepo needs different coding conventions for React component files, API route files, and DB migration files, each scattered across many directories. What is the most maintainable way to scope conventions by file type?",
+    "options": [
+      { "key": "A", "text": "Path-scoped rule files that match each file type by glob pattern, loaded only when editing matching files" },
+      { "key": "B", "text": "Separate CLAUDE.md files in every directory that contains these file types" },
+      { "key": "C", "text": "All conventions in the root CLAUDE.md under clear section headers for each file type" },
+      { "key": "D", "text": "Custom slash commands for switching between convention modes" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Glob-scoped rules load the right conventions only when a matching file is being edited, regardless of which directory it lives in — ideal for file types scattered across a monorepo, and it keeps irrelevant context out. Per-directory CLAUDE.md files (B) require duplication and miss scattered files. A monolithic root CLAUDE.md (C) loads every convention regardless of the file in play. Slash commands (D) require manual switching.",
+    "corrected": false
+  },
+  {
+    "id": 17,
+    "category": "Claude Code",
+    "text": "A team wants a reusable Claude Code skill for database migrations that runs in an isolated context (so verbose migration logs don't pollute the main conversation) and has access only to the Bash and Read tools. Which SKILL.md frontmatter achieves this?",
+    "options": [
+      { "key": "A", "text": "An isolated/forked execution context, allowed-tools limited to [Bash, Read], and model-invocation disabled" },
+      { "key": "B", "text": "An isolated/forked execution context with allowed-tools limited to [Bash, Read]" },
+      { "key": "C", "text": "isolation: true, tools: [Bash, Read], disable-model-invocation: true" },
+      { "key": "D", "text": "An isolated context with allowed-tools [Bash, Read, Write]" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Running the skill in a forked/isolated sub-context keeps its verbose output out of the main conversation, and restricting allowed-tools to exactly [Bash, Read] enforces the requested scope. Disabling model invocation (A) would stop the model from triggering the skill — not asked for. Option C uses field names that aren't the real ones. Option D adds Write, which wasn't requested. (Exact frontmatter keys vary by Claude Code version — verify against current docs.)",
+    "corrected": false
+  },
+  {
+    "id": 18,
+    "category": "Structured Outputs",
+    "text": "An invoice-extraction system uses a JSON schema. Some invoices lack certain fields (e.g., purchase-order numbers). How should the schema handle potentially missing fields to prevent Claude from fabricating values?",
+    "options": [
+      { "key": "A", "text": "Make all fields required and instruct Claude to use 'N/A' for missing values" },
+      { "key": "B", "text": "Use enum fields with an 'unknown' option for fields that might be missing" },
+      { "key": "C", "text": "Make potentially-absent fields nullable so Claude can return null instead of guessing" },
+      { "key": "D", "text": "Add post-processing validation to detect and remove likely-fabricated values" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Making a field nullable gives the model a legitimate way to say 'not present in the source' (null) instead of inventing a plausible value. Forcing a required string with 'N/A' (A) still pressures the model to emit something and pollutes the type. Enums (B) are for fixed value sets, not presence/absence. Post-processing (D) tries to detect fabrication after it happens rather than preventing it.",
+    "corrected": false
+  },
+  {
+    "id": 19,
+    "category": "Cost & Batch",
+    "text": "A team uses the Message Batches API for overnight compliance reports (non-blocking) and wants to also use it for pre-merge code-review checks in CI to save cost. What is the correct recommendation?",
+    "options": [
+      { "key": "A", "text": "Use batch processing for the overnight reports only; use real-time API calls for pre-merge checks" },
+      { "key": "B", "text": "Use batch processing for both — the 50% savings justify the CI delay" },
+      { "key": "C", "text": "Use real-time API for both — batch processing only helps above 100K requests" },
+      { "key": "D", "text": "Use batch processing for pre-merge checks only since they benefit from structured output" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "The Batches API trades latency for ~50% cost: it has no latency SLA and can take up to ~24 hours, which is fine for overnight reports but unacceptable for a blocking CI check where developers wait for feedback. So batch the reports and use real-time calls for pre-merge. B would stall the dev workflow; C invents a 100K-request floor that doesn't exist; D reverses the appropriate use cases.",
+    "corrected": false
+  },
+  {
+    "id": 20,
+    "category": "Prompting",
+    "text": "A code-review tool has high false positives — flagging correct error handling as 'missing error handling' and intentional type assertions as 'unsafe casts.' Adding 'be more conservative' didn't help. What most effectively reduces false positives?",
+    "options": [
+      { "key": "A", "text": "Add a confidence threshold that suppresses findings below 90% confidence" },
+      { "key": "B", "text": "Increase the context window to give Claude more surrounding code" },
+      { "key": "C", "text": "Provide 2–4 few-shot examples of the specific false-positive patterns and the correct non-flagging behavior" },
+      { "key": "D", "text": "Use tool_choice to force a specific static-analysis tool instead of Claude's judgment" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Targeted few-shot examples that show the exact patterns being mis-flagged and the correct (non-flagging) behavior teach the model to generalize and stop over-reporting — more effective than vague 'be conservative' instructions. Self-reported confidence thresholds (A) are poorly calibrated; more context (B) doesn't fix the reasoning error; forcing an external analyzer (D) removes Claude's review capability entirely.",
+    "corrected": false
+  }
+]
