@@ -298,5 +298,455 @@
     "correctAnswer": ["C"],
     "explanation": "Targeted few-shot examples that show the exact patterns being mis-flagged and the correct (non-flagging) behavior teach the model to generalize and stop over-reporting — more effective than vague 'be conservative' instructions. Self-reported confidence thresholds (A) are poorly calibrated; more context (B) doesn't fix the reasoning error; forcing an external analyzer (D) removes Claude's review capability entirely.",
     "corrected": false
+  },
+  {
+    "id": 21,
+    "category": "Claude Code",
+    "text": "A CI/CD pipeline uses Claude Code for automated code review but hangs during execution because Claude is waiting for interactive input. What is the correct fix?",
+    "options": [
+      { "key": "A", "text": "Set a CLAUDE_CI=true environment variable to enable headless mode" },
+      { "key": "B", "text": "Add the -p (--print) flag to run Claude Code non-interactively" },
+      { "key": "C", "text": "Redirect stdin from /dev/null to prevent interactive prompts" },
+      { "key": "D", "text": "Use a --daemon flag to run Claude Code as a background process" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "The -p / --print flag runs Claude Code in non-interactive mode: it processes the prompt, prints the result, and exits without waiting for input — exactly what CI needs. The other options reference flags/env vars that aren't the documented mechanism; redirecting stdin (C) is a fragile workaround that doesn't change Claude Code's interactive behavior.",
+    "corrected": false
+  },
+  {
+    "id": 22,
+    "category": "Context Management",
+    "text": "During a long debugging session in Claude Code, the agent starts giving vague, generic responses like 'this follows typical patterns' instead of referencing the specific classes and methods it examined earlier. What is happening and what should you do?",
+    "options": [
+      { "key": "A", "text": "Context degradation from an extended session — use /compact and persist key findings in scratchpad files" },
+      { "key": "B", "text": "The model's temperature is rising over time — restart with a lower temperature" },
+      { "key": "C", "text": "The model is rate-limited — wait a few minutes before continuing" },
+      { "key": "D", "text": "The agent needs more explicit instructions — add detailed debugging steps to the system prompt" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Vague, 'typical-patterns' answers replacing specific references are a classic sign of context degradation in a very long session. Compacting frees context, and persisting key findings (file paths, hypotheses, decisions) to scratchpad files lets them survive context boundaries. Temperature (B) doesn't drift during a session (and isn't a knob on current models); rate limiting (C) doesn't change answer quality; more instructions (D) add to an already-overloaded context.",
+    "corrected": false
+  },
+  {
+    "id": 23,
+    "category": "Agent Design",
+    "text": "A support agent resolves 55% of tickets but frequently escalates simple password resets while handling complex billing disputes itself. How should you improve escalation accuracy?",
+    "options": [
+      { "key": "A", "text": "Add a confidence-score threshold where the agent self-reports certainty below 70% and escalates" },
+      { "key": "B", "text": "Implement an ML classifier outside Claude to make escalation decisions" },
+      { "key": "C", "text": "Add explicit escalation criteria with few-shot examples of when to escalate vs. resolve autonomously" },
+      { "key": "D", "text": "Restrict the agent to only handle password resets and escalate everything else" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Miscalibrated escalation is best fixed with explicit, written criteria plus few-shot examples showing the correct decision for each scenario type — this gives the model concrete decision boundaries. Self-reported confidence (A) is poorly calibrated; a separate ML classifier (B) is heavy engineering for a prompt-level problem; restricting scope (D) throws away most of the agent's value.",
+    "corrected": false
+  },
+  {
+    "id": 24,
+    "category": "Evaluation",
+    "text": "A data-extraction system shows 97% aggregate accuracy, but one vendor's invoices have a 23% error rate on 'tax_amount'. The current evaluation only checks aggregate accuracy across all vendors. What is the most effective improvement?",
+    "options": [
+      { "key": "A", "text": "Lower the overall accuracy threshold from 97% to 90% to account for the problematic vendor" },
+      { "key": "B", "text": "Add more training examples from the problematic vendor to the system prompt" },
+      { "key": "C", "text": "Create a separate extraction pipeline for the problematic vendor" },
+      { "key": "D", "text": "Use stratified sampling that measures accuracy by document type AND by field" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Aggregate accuracy hides concentrated failures. Stratifying by document type and by field surfaces exactly these hidden pockets (a specific vendor's tax_amount) so you can act on them. Lowering the threshold (A) just hides the problem; adding examples (B) may help generation but doesn't fix the measurement gap; a separate pipeline (C) is premature before you understand the full distribution of issues.",
+    "corrected": false
+  },
+  {
+    "id": 25,
+    "category": "Claude API",
+    "text": "After Claude responds with a tool_use block, how must you send the tool result back?",
+    "options": [
+      { "key": "A", "text": "A user message with a tool_result content block (containing the tool_use_id and content), placed before any text blocks" },
+      { "key": "B", "text": "A separate 'tool' role message with the tool name, result, and a reference to the call ID" },
+      { "key": "C", "text": "An assistant message with a tool_result block appended after the tool_use block" },
+      { "key": "D", "text": "A user message with the tool result as a plain text string referencing the tool name" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Tool results go in a user message as tool_result blocks keyed by tool_use_id, and those blocks must come first in the content array (before any text) or the API returns a 400. There is no 'tool' role (B) — only user/assistant. Results don't go in an assistant message (C), and a plain string (D) lacks the tool_use_id correlation the API requires.",
+    "corrected": false
+  },
+  {
+    "id": 26,
+    "category": "Structured Outputs",
+    "text": "A document pipeline needs Claude to output JSON conforming to a specific schema. Prompt instructions alone occasionally yield malformed JSON with missing fields. What most reliably guarantees schema-compliant output?",
+    "options": [
+      { "key": "A", "text": "Add JSON formatting examples in the system prompt with explicit field requirements" },
+      { "key": "B", "text": "Use tool_use with a JSON schema and tool_choice forcing the extraction tool" },
+      { "key": "C", "text": "Post-process Claude's output with a parser that fills defaults for missing fields" },
+      { "key": "D", "text": "Use output_config.format with type json_schema (strict)" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Structured outputs via output_config.format with a json_schema constrain generation to the schema at the response level — the strongest guarantee. A forced tool with a schema (B) also yields schema-valid output but at the tool-call level rather than the response. Prompt examples (A) are probabilistic; post-processing (C) fixes problems after they occur instead of preventing them.",
+    "corrected": false
+  },
+  {
+    "id": 27,
+    "category": "Claude Code",
+    "text": "A monorepo has frontend (React), backend (Express), and shared library packages, each needing context-specific instructions. What is the optimal CLAUDE.md configuration?",
+    "options": [
+      { "key": "A", "text": "A single root CLAUDE.md with all instructions organized by package in sections" },
+      { "key": "B", "text": "Root CLAUDE.md with universal standards plus subdirectory CLAUDE.md files for package-specific conventions" },
+      { "key": "C", "text": "Only .claude/rules/ files with glob patterns targeting each package's file types" },
+      { "key": "D", "text": "A user-level CLAUDE.md containing all project-specific instructions" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "The CLAUDE.md hierarchy is designed for this: a root file for universal standards plus per-package subdirectory CLAUDE.md files that add context when working in those directories. A single root file (A) loads everything regardless of context. Glob rules (C) work for file-type conventions but not package-level context. A user-level file (D) isn't shared with the team. (Glob rules and subdirectory files can also be combined.)",
+    "corrected": false
+  },
+  {
+    "id": 28,
+    "category": "Multi-Agent Systems",
+    "text": "A synthesis subagent occasionally needs fact-checking. 85% of fact-checks are simple lookups it could do itself; 15% need complex verification via the coordinator. What tool-distribution approach is recommended?",
+    "options": [
+      { "key": "A", "text": "Remove all fact-checking from the synthesis agent and route everything through the coordinator" },
+      { "key": "B", "text": "Give the synthesis agent full access to all research tools to avoid bottlenecks" },
+      { "key": "C", "text": "Give the synthesis agent a scoped verify_fact tool for simple lookups; route complex checks through the coordinator" },
+      { "key": "D", "text": "Create a dedicated fact-checking subagent that handles all verification regardless of complexity" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Least privilege with a pragmatic exception: give each agent the tools its primary role needs, plus a narrowly-scoped tool for high-frequency cross-role needs. A scoped verify_fact tool handles the common 85% locally while complex cases still escalate. Routing everything through the coordinator (A) bottlenecks simple lookups; full tool access (B) violates least privilege; a dedicated subagent (D) adds coordination overhead for trivial checks.",
+    "corrected": false
+  },
+  {
+    "id": 29,
+    "category": "Multi-Agent Systems",
+    "text": "A coordinator wants to spawn multiple research subagents simultaneously to investigate different aspects of a question. How should it trigger parallel subagent execution?",
+    "options": [
+      { "key": "A", "text": "Make sequential Task tool calls, one per subagent, with a 'parallel: true' flag" },
+      { "key": "B", "text": "Configure the system prompt with a parallelism parameter specifying concurrent agent count" },
+      { "key": "C", "text": "Use the batch processing API to submit all subagent requests simultaneously" },
+      { "key": "D", "text": "Emit multiple Task tool calls in a single coordinator response" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Claude supports parallel tool calling: when a single response contains multiple tool_use (Task) blocks, the harness can execute them concurrently. So the coordinator emits several Task calls in one response. There is no 'parallel: true' flag (A) or system-prompt parallelism parameter (B); the Batches API (C) is for independent, latency-tolerant requests, not coordinated live subagents.",
+    "corrected": false
+  },
+  {
+    "id": 30,
+    "category": "Multi-Agent Systems",
+    "text": "A codebase-migration project requires investigating the legacy system, designing the new architecture, implementing changes, and writing tests. The phases are highly interdependent and the workers need to discuss findings. Subagents or agent teams?",
+    "options": [
+      { "key": "A", "text": "Agent teams — teammates share findings, claim tasks from a shared list, and communicate directly" },
+      { "key": "B", "text": "Subagents — each handles one phase and reports results back to the coordinator" },
+      { "key": "C", "text": "A single agent session with extended context to maintain coherence across all phases" },
+      { "key": "D", "text": "Prompt chaining with separate sessions per phase, passing summaries between them" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "When work is interdependent and requires back-and-forth, a collaborative agent-team model (shared task list, direct messaging) fits better than the report-back-only subagent pattern (B). A single long session (C) risks context degradation across all phases; prompt chaining across isolated sessions (D) loses cross-phase context and real-time coordination. (Verify the exact team primitives against current Claude Code docs.)",
+    "corrected": false
+  },
+  {
+    "id": 31,
+    "category": "Agent Design",
+    "text": "When tuning the effort parameter across a multi-agent system, which combination is most appropriate?",
+    "options": [
+      { "key": "A", "text": "max for coordinator reasoning, high for primary analysis agents, low for simple data-fetching subagents" },
+      { "key": "B", "text": "high for all agents to ensure consistent quality" },
+      { "key": "C", "text": "low for the coordinator to minimize cost, max for analysis subagents" },
+      { "key": "D", "text": "medium for all agents with manual temperature adjustments per task type" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Match effort to the cognitive load of each role: high/max for the coordinator's planning and the heavy analysis, low for mechanical work like data fetching where speed and cost matter more. Uniform high (B) wastes tokens on trivial tasks; inverting it (C) starves the coordinator of reasoning; uniform medium plus temperature (D) ignores per-role tuning, and temperature isn't a knob on current models.",
+    "corrected": false
+  },
+  {
+    "id": 32,
+    "category": "Structured Outputs",
+    "text": "A financial-extraction pipeline uses a validation-retry loop. After three retries, 'total_amount' still fails because the extracted line items (which are correct) don't sum to the stated total. What is the most likely issue?",
+    "options": [
+      { "key": "A", "text": "The retry loop needs more iterations to converge" },
+      { "key": "B", "text": "The schema must be simplified to reduce extraction complexity" },
+      { "key": "C", "text": "The retries are ineffective because the discrepancy is in the source document, not the extraction" },
+      { "key": "D", "text": "Claude needs a higher effort level to do accurate arithmetic during extraction" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "If the individual line items are extracted correctly but don't sum to the stated total, the source document itself is inconsistent — retries can't fix data that's wrong at the source. More iterations (A) won't converge on a 'correct' value that doesn't exist; simplifying the schema (B) or raising effort (D) doesn't address a source-data problem. The right move is to flag the discrepancy, not keep retrying.",
+    "corrected": false
+  },
+  {
+    "id": 33,
+    "category": "Multi-Agent Systems",
+    "text": "A research agent loses source attribution during summarization: the final report has statistics with no source, and conflicting data points are silently resolved by picking one value. What design change addresses both issues?",
+    "options": [
+      { "key": "A", "text": "Add post-processing that uses web search to re-attribute claims" },
+      { "key": "B", "text": "Require subagents to return structured data with claim-to-source mappings, and annotate conflicts with attribution rather than silently picking one value" },
+      { "key": "C", "text": "Increase the context window to prevent information loss during summarization" },
+      { "key": "D", "text": "Store all raw sources in a database and link report claims to source IDs" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Carrying explicit claim-to-source mappings through the pipeline preserves provenance, and annotating conflicts (showing both values with sources) avoids silent, arbitrary resolution. Re-attributing after the fact (A) is unreliable; a bigger context window (C) doesn't address the structural loss during summarization; a source database (D) is extra infrastructure that still doesn't fix how the summary handles attribution and conflicts.",
+    "corrected": false
+  },
+  {
+    "id": 34,
+    "category": "Claude API",
+    "text": "A developer's response includes both a text block and a tool_use block. When sending the tool result, they place a text block before the tool_result block in the user message and get a 400 error. What is wrong?",
+    "options": [
+      { "key": "A", "text": "Text blocks are not allowed in messages that contain tool_result blocks" },
+      { "key": "B", "text": "The tool_result must be sent in a separate message from any text content" },
+      { "key": "C", "text": "tool_result blocks must come first in the user message's content array, before any text blocks" },
+      { "key": "D", "text": "The original tool_use block must be included in the tool_result message" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "The API requires tool_result blocks to appear first in the content array; putting a text block ahead of them triggers a 400. Text blocks can coexist with tool_result (so A and B are wrong) — they just can't precede it. The tool_use block belongs in the prior assistant message, not echoed into the tool_result message (D).",
+    "corrected": false
+  },
+  {
+    "id": 35,
+    "category": "Claude Code",
+    "text": "A Claude Code skill for database migrations should accept a migration name as a parameter and use it in the skill's instructions. Which feature enables this?",
+    "options": [
+      { "key": "A", "text": "A required-params field in the SKILL.md frontmatter" },
+      { "key": "B", "text": "A custom input_schema JSON definition in the frontmatter" },
+      { "key": "C", "text": "Environment variables set before invocation via a shell frontmatter field" },
+      { "key": "D", "text": "The $ARGUMENTS substitution variable in the skill body, with argument-hint in frontmatter to prompt for it" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Skill/command bodies support argument substitution ($ARGUMENTS for the full string, and positional $1, $2…), and an argument-hint in frontmatter prompts the user for the value when it isn't supplied. Skills don't use a required-params field (A) or input_schema (B); a shell frontmatter field (C) is for setup, not parameter passing. (Confirm exact field names against current Claude Code docs.)",
+    "corrected": false
+  },
+  {
+    "id": 36,
+    "category": "MCP & Tools",
+    "text": "An MCP tool returns a transient timeout on its first call, but the agent treats all errors identically and abandons the operation. How should the tool's error response be improved for smarter recovery?",
+    "options": [
+      { "key": "A", "text": "Return structured error metadata including errorCategory, an isRetryable boolean, and a description distinguishing transient from permanent failures" },
+      { "key": "B", "text": "Return a generic is_error: true with a human-readable message" },
+      { "key": "C", "text": "Implement automatic retry inside the tool, hiding transient errors from the agent" },
+      { "key": "D", "text": "Log all errors externally and return success with empty results" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Structured error metadata (category + isRetryable + description) lets the agent decide intelligently: retry transient failures, escalate permanent ones. A generic error (B) gives no recovery signal. Hiding retries inside the tool (C) removes the agent's ability to reason about failures and can mask systemic problems. Returning fake success (D) is an anti-pattern that corrupts downstream reasoning.",
+    "corrected": false
+  },
+  {
+    "id": 37,
+    "category": "Claude Code",
+    "text": "A security-audit skill produces verbose logging that fills the main conversation context and crowds out earlier context. Which skill configuration prevents this?",
+    "options": [
+      { "key": "A", "text": "Set max_tokens in the skill frontmatter to limit output length" },
+      { "key": "B", "text": "Add logging: false to suppress verbose tool output" },
+      { "key": "C", "text": "Run the skill in a forked/isolated sub-agent context so only its final result returns to the main conversation" },
+      { "key": "D", "text": "Use the Explore subagent instead of a custom skill" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Running the skill in an isolated/forked context keeps its verbose intermediate output out of the main conversation — only the summarized result comes back. max_tokens (A) and a logging flag (B) aren't the right frontmatter mechanisms for this. Switching to the Explore subagent (D) replaces the skill rather than configuring it to isolate output. (Verify the exact frontmatter key against current docs.)",
+    "corrected": false
+  },
+  {
+    "id": 38,
+    "category": "Claude Code",
+    "text": "An architect needs to see which Claude Code memory files are currently loaded in a session, to debug why some instructions seem ignored. Which command shows this?",
+    "options": [
+      { "key": "A", "text": "/status" },
+      { "key": "B", "text": "/config" },
+      { "key": "C", "text": "/memory — shows which memory (CLAUDE.md) files are loaded in the current session" },
+      { "key": "D", "text": "/debug" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "/memory shows the CLAUDE.md memory files loaded at the various levels (user, project, subdirectory), which is exactly how you debug instructions that aren't taking effect. The others aren't the command for inspecting loaded memory.",
+    "corrected": false
+  },
+  {
+    "id": 39,
+    "category": "Context Management",
+    "text": "A long customer-support conversation is nearing the context-window limit. You must keep operating without losing critical transaction details (order numbers, refund amounts, commitments) from earlier. What is recommended?",
+    "options": [
+      { "key": "A", "text": "Increase max_tokens to expand the context window" },
+      { "key": "B", "text": "Extract transactional facts into a persistent 'case facts' block and use compaction to summarize older conversation" },
+      { "key": "C", "text": "Start a new conversation and ask the customer to repeat the issue" },
+      { "key": "D", "text": "Enable streaming to reduce the conversation's memory footprint" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Pull the must-keep facts into a structured block that survives summarization, and let compaction condense the older conversational filler — you preserve the critical details while freeing space. max_tokens (A) controls output length, not the context window; restarting (C) is a poor customer experience; streaming (D) affects delivery, not context usage.",
+    "corrected": false
+  },
+  {
+    "id": 40,
+    "category": "Claude Code",
+    "text": "A team wants to use the Explore subagent in Claude Code to understand a large codebase before making changes. What are its key characteristics?",
+    "options": [
+      { "key": "A", "text": "It uses a lightweight model (Haiku) with read-only access, isolates verbose output, and returns summaries" },
+      { "key": "B", "text": "It uses a high-capability model with full write access for comprehensive exploration" },
+      { "key": "C", "text": "It runs in the same context as the main agent but with enhanced search" },
+      { "key": "D", "text": "It spawns multiple parallel sub-agents to explore different parts simultaneously" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "The Explore subagent is a focused, read-only discovery agent on a lightweight (Haiku) model that isolates its verbose searching from the main conversation and returns concise summaries — preserving the main context. It isn't a high-capability writer (B), doesn't share the main context (C), and is a single focused agent rather than a parallel fan-out (D).",
+    "corrected": false
+  },
+  {
+    "id": 41,
+    "category": "Multi-Agent Systems",
+    "text": "A coordinator must pass findings from a web_search subagent to a synthesis subagent. The web_search agent returns a large amount of raw data (full page contents, URLs, timestamps, metadata). What is the best practice for structuring this transfer?",
+    "options": [
+      { "key": "A", "text": "Use a structured format that separates content from metadata, including source URLs and page references" },
+      { "key": "B", "text": "Pass the complete raw data to preserve fidelity" },
+      { "key": "C", "text": "Have the coordinator summarize findings into a brief paragraph before passing them on" },
+      { "key": "D", "text": "Store raw data in a shared database and pass only record IDs" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A structured format that separates the actual content from its metadata (source URLs, page numbers) preserves provenance while keeping the payload lean and consumable. Passing all raw data (B) bloats context; pre-summarizing into prose (C) risks losing detail the synthesis step needs; a shared database with IDs (D) adds infrastructure the synthesis agent may not be able to query.",
+    "corrected": false
+  },
+  {
+    "id": 42,
+    "category": "Claude API",
+    "text": "Using extended/adaptive thinking together with tool use, a developer strips all thinking blocks from the conversation before sending the next request, and the API errors. What rule was violated?",
+    "options": [
+      { "key": "A", "text": "Thinking blocks must always be preserved in the full conversation history forever" },
+      { "key": "B", "text": "Thinking blocks can only be removed after the entire conversation ends" },
+      { "key": "C", "text": "Thinking is incompatible with tool use and must be disabled during tool calls" },
+      { "key": "D", "text": "Thinking blocks must be returned alongside their corresponding tool results; they can be dropped only after those tool results have been processed" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "When thinking and tool use are active together, the thinking block(s) tied to a turn's tool_use must be echoed back with that turn's tool results on the same model — removing them mid-flight breaks the turn and errors. They can be dropped on later turns once those tool results have been processed. So A/B are too strict and C is simply wrong (thinking works with tool use).",
+    "corrected": false
+  },
+  {
+    "id": 43,
+    "category": "Claude API",
+    "text": "An agent harness is running a conversation that exceeds ~150,000 input tokens and wants to automatically summarize older context while keeping recent turns. Which API feature handles this?",
+    "options": [
+      { "key": "A", "text": "A token-limit parameter that auto-truncates messages at 150K" },
+      { "key": "B", "text": "Automatic prompt caching that compresses repeated content" },
+      { "key": "C", "text": "A client-side sliding window that drops the oldest messages" },
+      { "key": "D", "text": "Server-side compaction (beta) configured with a trigger threshold" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Server-side compaction (a beta feature, header compact-2026-01-12) automatically summarizes earlier context when input tokens cross a configurable threshold, emitting a compaction block that subsequent requests build on. There's no auto-truncate token parameter (A); prompt caching (B) reduces cost on repeated prefixes but doesn't shrink context; a client-side sliding window (C) is manual and bluntly drops possibly-important turns.",
+    "corrected": false
+  },
+  {
+    "id": 44,
+    "category": "Claude Code",
+    "text": "An MCP server needs API tokens for authentication. The tokens must stay out of version control but be available to all team members. How should this be configured in .mcp.json?",
+    "options": [
+      { "key": "A", "text": "Hardcode the tokens directly in .mcp.json" },
+      { "key": "B", "text": "Use environment-variable expansion like ${API_TOKEN} in .mcp.json, with each developer setting the variable locally" },
+      { "key": "C", "text": "Store tokens in a separate gitignored .mcp-secrets.json file" },
+      { "key": "D", "text": "Put tokens in user-level config and cross-reference them from .mcp.json" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": ".mcp.json supports ${VARIABLE} environment-variable expansion, so the committed config references a variable while the actual secret lives in each developer's local environment — version-controllable yet secret-free. Hardcoding (A) leaks secrets into git; a separate secrets file (C) is non-standard; cross-file references between user config and .mcp.json (D) aren't a supported mechanism.",
+    "corrected": false
+  },
+  {
+    "id": 45,
+    "category": "Multi-Agent Systems",
+    "text": "A review system for a 14-file pull request shows inconsistent depth across files, missed bugs in complex files, and contradictory feedback between files. What architecture best addresses this?",
+    "options": [
+      { "key": "A", "text": "One file per subagent, reviewed in parallel with no cross-file coordination" },
+      { "key": "B", "text": "Increase the context window to include all 14 files at once" },
+      { "key": "C", "text": "Per-file local analysis passes, followed by a separate cross-file integration pass" },
+      { "key": "D", "text": "A single long review session with instructions to keep depth consistent" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Reviewing each file in its own focused pass fixes attention dilution (consistent depth, fewer missed bugs), and a dedicated cross-file integration pass catches interactions like incompatible API changes. Parallel per-file with no coordination (A) misses cross-file issues; a bigger context window (B) doesn't solve dilution; one long session (D) reproduces the original inconsistency.",
+    "corrected": false
+  },
+  {
+    "id": 46,
+    "category": "Prompting",
+    "text": "A code-review system prompt must cover security vulnerabilities, code style, and documentation completeness, but natural-language paragraphs lead to inconsistent rule application. Which structuring technique most improves consistency?",
+    "options": [
+      { "key": "A", "text": "Use XML tags to structure each concern area with explicit criteria" },
+      { "key": "B", "text": "Number each rule and add a 1–10 priority ranking" },
+      { "key": "C", "text": "Write all rules as a single bulleted paragraph for easy scanning" },
+      { "key": "D", "text": "Create separate system prompts per concern and run three independent reviews" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "XML-tagged sections (e.g. <security_rules>, <style_rules>, <documentation_rules>) give Claude clear structural boundaries and reduce cross-contamination between concern areas — a well-established prompting practice. Numbering with priorities (B) adds ordering but not separation; a single bulleted blob (C) is still unstructured; three separate reviews (D) triples cost and doesn't improve within-review consistency.",
+    "corrected": false
+  },
+  {
+    "id": 47,
+    "category": "Agent Design",
+    "text": "A support agent's customer asks to speak with a human manager after one failed troubleshooting attempt. The agent has more troubleshooting steps it could try. What should it do?",
+    "options": [
+      { "key": "A", "text": "Attempt the remaining troubleshooting steps since it might resolve the issue" },
+      { "key": "B", "text": "Honor the customer's explicit request for a human immediately" },
+      { "key": "C", "text": "Ask whether they'd like to try one more step before escalating" },
+      { "key": "D", "text": "Escalate, but first run diagnostics to give the human context" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "An explicit request for a human is a hard escalation trigger and should be honored immediately — overriding it to keep troubleshooting damages trust. Continuing (A) ignores the request; asking to try one more step (C) delays the requested escalation; gating escalation on diagnostics (D) also introduces delay. (Attaching context to the handoff is good — but not as a reason to defer the escalation itself.)",
+    "corrected": false
+  },
+  {
+    "id": 48,
+    "category": "Agent SDK & Hooks",
+    "text": "Using the Claude Agent SDK (Python), a developer wants to load project-level configuration — skills, CLAUDE.md memory, and custom commands. How should they configure the query() call?",
+    "options": [
+      { "key": "A", "text": "Pass config_path pointing to the project's .claude directory" },
+      { "key": "B", "text": "Use the --settings CLI flag to point at the config files" },
+      { "key": "C", "text": "Manually read and inject CLAUDE.md into the system prompt" },
+      { "key": "D", "text": "Set setting_sources to include 'project' in ClaudeAgentOptions" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "The Agent SDK loads project-level skills, slash commands, and memory when you opt into project setting sources via ClaudeAgentOptions (setting_sources including 'project'). A config_path parameter (A) isn't the mechanism; a CLI flag (B) isn't an SDK option; manually injecting CLAUDE.md (C) is partial and misses skills/commands. (Confirm the exact option name against the current SDK.)",
+    "corrected": false
+  },
+  {
+    "id": 49,
+    "category": "Cost & Batch",
+    "text": "For large batch reports, Claude sometimes produces very detailed thinking traces that increase time and cost even on straightforward extraction. What configuration helps optimize this?",
+    "options": [
+      { "key": "A", "text": "Disable extended thinking entirely for all batch processing" },
+      { "key": "B", "text": "Set effort to 'low' for batch extraction so Claude reduces thinking depth on simple items" },
+      { "key": "C", "text": "Reduce the context window to force shorter thinking traces" },
+      { "key": "D", "text": "Set max_tokens low to truncate lengthy thinking traces" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "The effort parameter is a behavioral dial across thinking, tool calls, and verbosity; 'low' makes the model far more economical on simple items while still allowing more thinking when genuinely needed. Disabling thinking entirely (A) removes its benefit on the harder items; shrinking context (C) doesn't target thinking length; a low max_tokens (D) truncates the final output rather than reducing thinking.",
+    "corrected": false
+  },
+  {
+    "id": 50,
+    "category": "Prompt Caching",
+    "text": "An agentic system using prompt caching sees cache hits drop to 0% whenever the tool definitions change, even though the rest of the prompt is identical. What explains this?",
+    "options": [
+      { "key": "A", "text": "Tool definitions aren't part of the cache, so something else must be the cause" },
+      { "key": "B", "text": "Tool definitions sit at the top of the cache hierarchy; changing them invalidates the tools, system, and messages layers" },
+      { "key": "C", "text": "Caching requires a minimum of 4096 tokens of tool definitions" },
+      { "key": "D", "text": "The 5-minute cache TTL expired between calls" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Prompt caching is a prefix match with the render order tools → system → messages. Tools are first, so any change to tool definitions invalidates everything after them — the cached system prompt and messages included — dropping hits to zero. Tools are part of the cache (A is wrong); there's no tool-specific 4096-token rule (C); TTL expiry (D) wouldn't correlate specifically with tool-definition changes.",
+    "corrected": false
   }
 ]
