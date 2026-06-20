@@ -2248,5 +2248,755 @@
     "correctAnswer": ["D"],
     "explanation": "The interview pattern has Claude ask clarifying questions before implementing — valuable when the task is ambiguous, so it builds the right thing. The others describe documentation (A), end-user interviews (B), or collaboration (C), not this pattern.",
     "corrected": false
+  },
+  {
+    "id": 151,
+    "category": "Structured Outputs",
+    "text": "A survey-processing pipeline uses strict-mode structured output with required fields. Claude refuses to produce output for a survey containing only profanity with no constructive feedback. What is happening?",
+    "options": [
+      { "key": "A", "text": "Strict mode doesn't support free-text fields" },
+      { "key": "B", "text": "The schema requires fields the input can't populate, causing a validation failure" },
+      { "key": "C", "text": "The profanity triggers a content filter separate from schema validation" },
+      { "key": "D", "text": "On refusal or max_tokens, strict-mode output isn't guaranteed — the schema is only guaranteed on a successful end_turn completion" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Structured-output guarantees apply only when generation completes normally (end_turn). If the model refuses (or hits max_tokens), the output may not conform to the schema, so you must handle those stop reasons. Strict mode does support free-text fields (A); the issue isn't unfillable required fields (B); and it's the refusal stop_reason, not a hidden separate filter, that breaks the guarantee (C).",
+    "corrected": false
+  },
+  {
+    "id": 152,
+    "category": "Agent SDK & Hooks",
+    "text": "A team enforces compliance with hooks but also wants Claude to explain to the customer why an operation was blocked. Which hook type lets you inject explanatory feedback when blocking?",
+    "options": [
+      { "key": "A", "text": "A PreToolUse hook with exit code 2 and JSON output containing the block reason, which Claude uses to explain to the customer" },
+      { "key": "B", "text": "A PreToolUse hook with exit code 0 and a description in stdout" },
+      { "key": "C", "text": "A PostToolUse hook that adds the block reason to a modified tool result" },
+      { "key": "D", "text": "A notification hook that sends the reason directly to the customer" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A PreToolUse hook that blocks (exit code 2) and returns a structured reason gives Claude feedback it can turn into a customer-friendly explanation. Exit code 0 (B) doesn't block; PostToolUse (C) fires after execution; a notification hook (D) doesn't feed back into the conversation.",
+    "corrected": false
+  },
+  {
+    "id": 153,
+    "category": "MCP & Tools",
+    "text": "Configuring the API-level MCP connector, where does the authorization token for the MCP server go?",
+    "options": [
+      { "key": "A", "text": "In a separate auth header alongside the Anthropic API key" },
+      { "key": "B", "text": "In a .env file the MCP server reads independently" },
+      { "key": "C", "text": "In the system prompt as a tool-accessible credential" },
+      { "key": "D", "text": "In the mcp_servers configuration entry: {type: 'url', url, name, authorization_token}" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "The connector takes the token in the mcp_servers entry (authorization_token), which is passed to the server on connection. It isn't combined with the Anthropic API key header (A), it isn't a server-side .env requirement for the connector (B), and putting credentials in the prompt (C) is a security anti-pattern.",
+    "corrected": false
+  },
+  {
+    "id": 154,
+    "category": "Structured Outputs",
+    "text": "An architect has 22 tools with strict mode enabled and hits a limit. What is the constraint (per the source exam's stated limits)?",
+    "options": [
+      { "key": "A", "text": "Strict mode supports at most 10 tools per request" },
+      { "key": "B", "text": "There's no limit as long as total schema size is under 100KB" },
+      { "key": "C", "text": "Strict mode caps at ~20 strict tools, so the schema must be simplified" },
+      { "key": "D", "text": "22 tools work, but compilation will exceed the API timeout" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Per the source exam, strict structured outputs have schema-complexity caps (~20 strict tools, with limits on optional parameters and union types), so 22 exceeds the tool cap and you must simplify. There's no 10-tool cap (A); there is a limit (B is wrong); the issue is a documented cap, not a timeout (D). Note: treat the exact numbers as exam-scoped; verify against current docs.",
+    "corrected": false
+  },
+  {
+    "id": 155,
+    "category": "Multi-Agent Systems",
+    "text": "A knowledge agent compiles from multiple sources; two reports give different market sizes for the same market. How should the synthesis agent handle the conflict?",
+    "options": [
+      { "key": "A", "text": "Average the conflicting values" },
+      { "key": "B", "text": "Use the most recent source's value" },
+      { "key": "C", "text": "Flag the conflict and escalate to a human reviewer" },
+      { "key": "D", "text": "Annotate the conflict with full attribution — present both values with their provenance rather than picking one" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Surface both figures with their sources, dates, and methodology so the consumer can judge — don't silently resolve it. Averaging (A) manufactures a fake number; assuming recency means accuracy (B) is unsafe; escalating to a human (C) is unnecessary when the conflict can be transparently presented.",
+    "corrected": false
+  },
+  {
+    "id": 156,
+    "category": "Claude Code",
+    "text": "A developer wants a skill to always inject the latest contents of a config file into its context at invocation time. Which SKILL.md feature supports this?",
+    "options": [
+      { "key": "A", "text": "Backtick-wrapped !command syntax that runs a command and injects its output (e.g. !`cat config.json`)" },
+      { "key": "B", "text": "@import syntax for referencing external files" },
+      { "key": "C", "text": "A 'files' frontmatter field listing files to include" },
+      { "key": "D", "text": "${FILE_PATH} variable substitution" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Backtick !command injection runs a shell command (e.g. cat) and inserts its current output at invocation — perfect for always-fresh file contents. @import (B) is for static CLAUDE.md includes; a 'files' frontmatter field (C) and ${FILE_PATH} (D) aren't the dynamic-injection mechanism.",
+    "corrected": false
+  },
+  {
+    "id": 157,
+    "category": "Multi-Agent Systems",
+    "text": "An insurance-claims agent processes multi-coverage claims (auto + medical) in a single pass and sometimes misses the secondary coverage. What scheduling approach helps ensure full coverage?",
+    "options": [
+      { "key": "A", "text": "Decompose the multi-coverage claim into separate items and investigate each coverage type independently before combining" },
+      { "key": "B", "text": "A fixed checklist of all coverage types to iterate through" },
+      { "key": "C", "text": "Increase the context window to prevent information loss" },
+      { "key": "D", "text": "Route multi-coverage claims to a senior agent" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Decomposing the claim and analyzing each coverage type on its own prevents one coverage from overshadowing the other, then results combine. A rigid checklist (B) is brittle; a bigger window (C) doesn't address attention dilution; routing to a senior agent (D) defers rather than fixes the problem.",
+    "corrected": false
+  },
+  {
+    "id": 158,
+    "category": "MCP & Tools",
+    "text": "Which MCP tool-naming convention follows best practice?",
+    "options": [
+      { "key": "A", "text": "tool1, tool2, tool3 with descriptions explaining each" },
+      { "key": "B", "text": "Internal function names like handlePRList, sendSlackMsg" },
+      { "key": "C", "text": "Service-based namespacing like github_list_prs, slack_send_message, jira_create_ticket" },
+      { "key": "D", "text": "Single words like list, send, create" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "service_action_target naming (github_list_prs) makes each tool's purpose clear from the name and prevents ambiguity across services. Numbered names (A) carry no meaning; implementation names (B) leak internals; single words (D) collide across services.",
+    "corrected": false
+  },
+  {
+    "id": 159,
+    "category": "Cost & Batch",
+    "text": "A compliance system runs monthly on the 15th, processing 10,000 documents; the reports are consumed the next business day. Real-time API costs $2,000 per run. What feature reduces cost?",
+    "options": [
+      { "key": "A", "text": "Prompt caching to reduce repeated document-processing cost" },
+      { "key": "B", "text": "effort='low' to reduce per-document cost at the expense of quality" },
+      { "key": "C", "text": "Message Batches API for ~50% savings, since the reports don't need real-time results" },
+      { "key": "D", "text": "A smaller model (Haiku) for lower per-token cost" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "With next-day delivery, the latency-tolerant Batches API cuts cost ~50% (≈$2,000 → ≈$1,000) within its 24-hour window. Caching (A) helps repeated prefixes, not per-document volume; low effort (B) may hurt report quality; a smaller model (D) may reduce the accuracy compliance needs.",
+    "corrected": false
+  },
+  {
+    "id": 160,
+    "category": "Context Management",
+    "text": "Adding several product images alongside thinking mode makes the context window fill faster. What explains the interaction between images, thinking, and context?",
+    "options": [
+      { "key": "A", "text": "Images are incompatible with extended thinking and must be processed separately" },
+      { "key": "B", "text": "All tokens, including thinking tokens, count toward the context window, so images plus thinking traces consume context faster than either alone" },
+      { "key": "C", "text": "Each image consumes fixed tokens regardless of thinking mode" },
+      { "key": "D", "text": "Images automatically disable thinking mode" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Images are token-heavy and thinking generates additional tokens; since everything counts toward the context window, combining them shrinks available context faster. Images work with thinking (A and D are wrong), and while images do cost tokens, the key point is the additive thinking interaction (C misses it).",
+    "corrected": false
+  },
+  {
+    "id": 161,
+    "category": "Claude Code",
+    "text": "A DB-migration workflow has 4 steps; step 1 (analyze current schema) is verbose and reads many files. Which workflow best preserves context for steps 2–4?",
+    "options": [
+      { "key": "A", "text": "Execute all four steps in one conversation" },
+      { "key": "B", "text": "Use the Explore subagent for step 1, then handle steps 2–4 in the main conversation using its summary" },
+      { "key": "C", "text": "Four separate conversations, one per step" },
+      { "key": "D", "text": "Use plan mode for all four steps before executing" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Explore isolates the verbose schema analysis and returns a summary, keeping the main context free for migration generation, dry-run, and execution. One conversation (A) floods context; separate conversations (C) lose continuity; planning all steps (D) doesn't address step 1's context cost.",
+    "corrected": false
+  },
+  {
+    "id": 162,
+    "category": "Agent SDK & Hooks",
+    "text": "A PostToolUse hook strips PII from MCP tool results, yet Claude still occasionally references PII. Most likely issue?",
+    "options": [
+      { "key": "A", "text": "PostToolUse hooks can only inspect, not modify, tool results" },
+      { "key": "B", "text": "Claude is retrieving PII from its training data" },
+      { "key": "C", "text": "The PII appeared in earlier conversation messages or prior tool results that weren't transformed" },
+      { "key": "D", "text": "A race condition lets some results pass unmodified" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "The hook only transforms the current tool result; PII already present in earlier history remains in context and can be referenced. PostToolUse can modify results (A is wrong); Claude isn't pulling specific customer PII from training (B); a race condition (D) is less likely than historical context.",
+    "corrected": false
+  },
+  {
+    "id": 163,
+    "category": "Multi-Agent Systems",
+    "text": "A 14-file PR needs thorough per-file analysis AND detection of cross-file issues (e.g., incompatible API changes between a service and its consumer). Analyzing all files at once gave inconsistent depth. What multi-pass strategy works?",
+    "options": [
+      { "key": "A", "text": "Randomly sample 5 files for deep analysis, summary-level for the rest" },
+      { "key": "B", "text": "Group files by directory and analyze each directory independently" },
+      { "key": "C", "text": "Single pass with instructions to keep depth consistent" },
+      { "key": "D", "text": "First pass: per-file local analysis; second pass: cross-file integration using the first-pass summaries" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Per-file passes give each file focused depth, and a dedicated cross-file integration pass catches inter-file issues — addressing attention dilution. Sampling (A) misses files; per-directory analysis (B) can miss cross-directory issues; a single pass (C) repeats the failed approach.",
+    "corrected": false
+  },
+  {
+    "id": 164,
+    "category": "Claude Code",
+    "text": "To include a team's coding standards from a separate document inside CLAUDE.md without duplicating content, which syntax is used?",
+    "options": [
+      { "key": "A", "text": "#include './coding-standards.md' (C-preprocessor style)" },
+      { "key": "B", "text": "An 'includes' field in the CLAUDE.md frontmatter" },
+      { "key": "C", "text": "@import syntax to reference external files, keeping CLAUDE.md modular" },
+      { "key": "D", "text": "Symbolic links to the external document" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "CLAUDE.md supports @import to pull in external files, keeping the main file modular. #include (A) and an 'includes' frontmatter field (B) aren't supported; symlinks (D) are a filesystem trick that doesn't integrate with CLAUDE.md loading.",
+    "corrected": false
+  },
+  {
+    "id": 165,
+    "category": "Claude API",
+    "text": "Which models support the 1M-token context window (per the source exam)?",
+    "options": [
+      { "key": "A", "text": "All Claude 4 models" },
+      { "key": "B", "text": "Claude Opus 4.6, Sonnet 4.6, and Mythos Preview" },
+      { "key": "C", "text": "Only Opus 4.6; others are limited to 200K" },
+      { "key": "D", "text": "Sonnet 4.5 and Opus 4.5 support 1M, while 4.6 models support 2M" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Per the source exam, the 1M context window is attributed to Opus 4.6, Sonnet 4.6, and Mythos Preview, while older models (e.g., Sonnet 4.5) are 200K. Not all Claude 4 models have 1M (A); it isn't Opus-only (C); the 2M figure (D) is wrong. (In current docs the 1M tier has since broadened — treat the exact list as exam-scoped.)",
+    "corrected": false
+  },
+  {
+    "id": 166,
+    "category": "MCP & Tools",
+    "text": "An agent treats 'tool error' and 'tool ran fine but found nothing' identically, saying 'I couldn't find that.' What response distinction should the tool implement?",
+    "options": [
+      { "key": "A", "text": "Use HTTP status codes (404 vs 500) in the response" },
+      { "key": "B", "text": "Distinguish access failures (isError: true, isRetryable: true for timeouts) from valid empty results (isError: false with an empty result set)" },
+      { "key": "C", "text": "Use the same format but add a log_level field" },
+      { "key": "D", "text": "Always return isError: true with a severity field" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Distinguish a genuine failure (isError true, retryable for timeouts) from a successful empty result (isError false, empty set) so the agent retries when appropriate and reports 'no data' accurately otherwise. HTTP codes (A), a log_level (C), or always-error (D) don't make this success-vs-failure distinction.",
+    "corrected": false
+  },
+  {
+    "id": 167,
+    "category": "Context Management",
+    "text": "A team runs compaction then immediately needs current market data, having configured pause-after-compaction. What stop_reason do they get, and what should they do before continuing?",
+    "options": [
+      { "key": "A", "text": "stop_reason 'end_turn' — continue normally" },
+      { "key": "B", "text": "stop_reason 'tool_use' — compaction triggers a tool call" },
+      { "key": "C", "text": "stop_reason 'compaction' — inject the updated market data, then continue the next request" },
+      { "key": "D", "text": "stop_reason 'max_tokens' — the summary consumed the budget" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Pause-after-compaction returns a 'compaction' stop_reason so the harness can inject fresh context (the current market data) before continuing. It isn't end_turn (A), a tool call (B), or a max_tokens truncation (D). (Confirm the exact parameter/stop_reason name against current docs.)",
+    "corrected": false
+  },
+  {
+    "id": 168,
+    "category": "Claude Code",
+    "text": "An architect suspects the root and a subdirectory CLAUDE.md have contradictory testing instructions. What's the most efficient way to diagnose this?",
+    "options": [
+      { "key": "A", "text": "Use /memory to see all loaded memory files and check for conflicts" },
+      { "key": "B", "text": "Read each CLAUDE.md manually and compare" },
+      { "key": "C", "text": "Run /init to regenerate and resolve conflicts" },
+      { "key": "D", "text": "Add a debug: true flag to the root CLAUDE.md" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "/memory shows exactly which CLAUDE.md files are loaded at each level, so you can spot conflicting instructions. Manual comparison (B) is slower; /init (C) would overwrite config; there's no debug flag (D).",
+    "corrected": false
+  },
+  {
+    "id": 169,
+    "category": "Claude API",
+    "text": "On which model family is interleaved thinking automatically available with adaptive thinking mode?",
+    "options": [
+      { "key": "A", "text": "Claude 4 models (e.g. Opus 4.6, Sonnet 4.6) with adaptive thinking enabled" },
+      { "key": "B", "text": "Only Sonnet 4.6 with an explicit interleaved_thinking: true flag" },
+      { "key": "C", "text": "All Claude models when thinking is set to 'enabled'" },
+      { "key": "D", "text": "Only Mythos Preview, as an experimental feature" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "On Claude 4 models, adaptive thinking automatically enables interleaved thinking (thinking between tool calls) with no special flag. It isn't gated to a single model with a manual flag (B), isn't available on all models via 'enabled' (C), and isn't Mythos-only (D).",
+    "corrected": false
+  },
+  {
+    "id": 170,
+    "category": "Prompting",
+    "text": "A Claude-based reviewer flags intentional design patterns as issues; 'be less aggressive' didn't help. Most effective technique?",
+    "options": [
+      { "key": "A", "text": "Add a whitelist of approved patterns never to flag" },
+      { "key": "B", "text": "Lower Claude's confidence threshold for flagging" },
+      { "key": "C", "text": "Use a simpler model that flags less" },
+      { "key": "D", "text": "Provide 2–4 targeted few-shot examples of the false-positive patterns and the correct (non-flagging) behavior" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Targeted few-shot examples teach the model to recognize the legitimate patterns and stop flagging them, generalizing to similar cases — far better than vague 'be conservative.' A whitelist (A) is rigid and incomplete; confidence isn't a configurable parameter (B); a weaker model (C) may miss true positives.",
+    "corrected": false
+  },
+  {
+    "id": 171,
+    "category": "Claude API",
+    "text": "An agent with extended thinking strips thinking blocks from previous turns; after a tool call, removing the thinking block causes an API error. Which rule was violated?",
+    "options": [
+      { "key": "A", "text": "Thinking blocks must never be removed from history" },
+      { "key": "B", "text": "Thinking blocks tied to a tool_use must be returned alongside the tool results; they can be dropped only after those results have been processed" },
+      { "key": "C", "text": "Only the model can decide when to remove thinking blocks" },
+      { "key": "D", "text": "Thinking blocks must be moved to the system prompt after tool use" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "When thinking and tool use co-occur, the thinking block(s) for that turn must accompany the tool results; dropping them before those results are processed errors. They can be dropped on later turns (so A is too strict), the client controls this (C is wrong), and they aren't relocated to the system prompt (D).",
+    "corrected": false
+  },
+  {
+    "id": 172,
+    "category": "Multi-Agent Systems",
+    "text": "Can subagent definitions be used as templates for teammates in agent teams?",
+    "options": [
+      { "key": "A", "text": "No — agent teams and subagents are completely separate with no interoperability" },
+      { "key": "B", "text": "Yes — subagent definitions can be referenced when spawning teammates, reusing agent configurations" },
+      { "key": "C", "text": "No — teammates must be fully defined at spawn time" },
+      { "key": "D", "text": "Yes — but only for the Explore subagent" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Subagent definitions can be referenced when spawning teammates, so well-defined agent configs are reused across standalone and team use. The systems do interoperate (A, C are wrong), and it isn't limited to Explore (D). (Verify exact team mechanics against current docs.)",
+    "corrected": false
+  },
+  {
+    "id": 173,
+    "category": "Cost & Batch",
+    "text": "You must classify 80,000 documents for a weekly report generated every Friday; each needs category, confidence, and key entities. Most cost-effective approach?",
+    "options": [
+      { "key": "A", "text": "Real-time API calls processed sequentially through the week" },
+      { "key": "B", "text": "Real-time API with prompt caching" },
+      { "key": "C", "text": "Multiple small batch jobs submitted daily" },
+      { "key": "D", "text": "Message Batches API submitted Thursday, results within 24 hours for Friday" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "The Batches API (~50% savings, up to 100K requests, 24-hour window) fits a Thursday submit for Friday delivery perfectly. Sequential real-time (A) is the most expensive; caching (B) helps prefixes but still full per-request pricing; daily small batches (C) add operational complexity without benefit.",
+    "corrected": false
+  },
+  {
+    "id": 174,
+    "category": "Prompt Caching",
+    "text": "Cache writes are charged but cache reads are 0 on subsequent requests with identical content, and the TTL hasn't expired. Most likely configuration issue?",
+    "options": [
+      { "key": "A", "text": "Content after the breakpoint changes between requests" },
+      { "key": "B", "text": "More than 4 breakpoints are configured, so all are ignored" },
+      { "key": "C", "text": "The cacheable content is below the model's minimum token threshold" },
+      { "key": "D", "text": "The API key lacks caching permissions" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Each model has a minimum cacheable prefix (e.g., ~1024–4096 tokens depending on model); below it, a write may register but no readable cache entry forms. The content is stated identical (so A is out), there's no 'all ignored' behavior for >4 breakpoints in this way (B), and caching isn't a separate key permission (D).",
+    "corrected": false
+  },
+  {
+    "id": 175,
+    "category": "Context Management",
+    "text": "For a complex multi-session agentic workflow (data collection, analysis, report) across context windows, what state-management approach does the agentic guidance recommend?",
+    "options": [
+      { "key": "A", "text": "Structured JSON for data state, unstructured text for progress notes, and git for version tracking" },
+      { "key": "B", "text": "Store all state in environment variables that persist across sessions" },
+      { "key": "C", "text": "Store everything in a single JSON file read at each session start" },
+      { "key": "D", "text": "Use a database for all state management" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A multi-format approach balances structure and flexibility: JSON for queryable data, free text for human-readable progress notes, and git to track changes across iterations. Env vars (B) are fragile, a single JSON file (C) lacks granularity, and a database (D) is unnecessary infrastructure.",
+    "corrected": false
+  },
+  {
+    "id": 176,
+    "category": "Agent SDK & Hooks",
+    "text": "A team wants Claude Code to automatically run the test suite after any file edit, without adding test commands to every prompt. What mechanism achieves this?",
+    "options": [
+      { "key": "A", "text": "A PostToolUse hook on the Edit and Write tools that runs the test suite" },
+      { "key": "B", "text": "Add 'always run tests after editing' to CLAUDE.md" },
+      { "key": "C", "text": "A custom slash command combining edit + test" },
+      { "key": "D", "text": "An --auto-test flag when starting Claude Code" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A PostToolUse hook bound to Edit/Write runs the tests automatically after every file modification, no prompting needed. A CLAUDE.md instruction (B) is a suggestion, not enforcement; a slash command (C) needs manual invocation; --auto-test (D) isn't a real flag.",
+    "corrected": false
+  },
+  {
+    "id": 177,
+    "category": "Agent SDK & Hooks",
+    "text": "A billing agent must NEVER refund over $500 without approval. The rule was in the system prompt, but long conversations sometimes lose it during compaction. Correct architectural approach?",
+    "options": [
+      { "key": "A", "text": "Repeat the refund-limit instruction every 10 messages" },
+      { "key": "B", "text": "Lower max_tokens to prevent conversations from getting long enough to compact" },
+      { "key": "C", "text": "Add the rule to custom compaction instructions so it persists through summarization" },
+      { "key": "D", "text": "Implement the $500 limit as a PreToolUse hook that blocks the refund tool when the amount exceeds $500" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "A PreToolUse hook enforces the limit deterministically — it can't be lost to compaction or prompt drift like an instruction can. Repeating the rule (A) is fragile; lowering max_tokens (B) cripples functionality; putting it in compaction instructions (C) still relies on the model honoring a summarized rule.",
+    "corrected": false
+  },
+  {
+    "id": 178,
+    "category": "MCP & Tools",
+    "text": "A product-catalog MCP tool has optional filters (category, priceRange, brand, inStock) as nullable types. For 'show me laptops under $1000', the agent passes null for brand and inStock. What helps the model understand when to omit parameters?",
+    "options": [
+      { "key": "A", "text": "Change nullable types to required with defaults" },
+      { "key": "B", "text": "Remove optional parameters and require all fields" },
+      { "key": "C", "text": "Add a 'required' field listing mandatory parameters" },
+      { "key": "D", "text": "Add input examples showing correct usage that includes only the relevant filters and omits the others" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Input examples that show which fields to include and which to omit teach the right behavior better than schema types alone. Making filters required (A/B) forces them onto simple queries; a 'required' list (C) is standard schema and doesn't demonstrate omission.",
+    "corrected": false
+  },
+  {
+    "id": 179,
+    "category": "Claude Code",
+    "text": "A monorepo has frontend (React), backend (Python/FastAPI), and infra (Terraform), each with different linting/testing/coding conventions. How should the CLAUDE.md hierarchy be structured?",
+    "options": [
+      { "key": "A", "text": "A single root CLAUDE.md with sections per service" },
+      { "key": "B", "text": "Root CLAUDE.md plus .claude/rules/ files (glob-scoped) for each service" },
+      { "key": "C", "text": "Only subdirectory CLAUDE.md files, no root" },
+      { "key": "D", "text": "Root CLAUDE.md plus per-service subdirectory CLAUDE.md files" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "A root file for shared conventions plus glob-scoped rule files auto-loads each service's rules based on the file being edited — context-aware without requiring you to be 'in' a directory. A single root (A) becomes unwieldy; subdirectory-only (C) loses shared conventions; per-service subdirectory files (D) work but only when editing within those directories. (B and D are both reasonable; B is the more flexible, glob-driven pattern.)",
+    "corrected": false
+  },
+  {
+    "id": 180,
+    "category": "Agent Design",
+    "text": "A 6-step onboarding flow runs sequentially in one conversation; the credit-check step occasionally times out, forcing the whole flow to restart. How should it be redesigned for reliability?",
+    "options": [
+      { "key": "A", "text": "Add retry logic for the credit-check step within the existing flow" },
+      { "key": "B", "text": "Run all six steps in parallel" },
+      { "key": "C", "text": "Move the credit check to a separate service outside the agent flow" },
+      { "key": "D", "text": "Implement each step as an independent stage with checkpointing, so a failure resumes from that stage rather than restarting" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Checkpointed stages let a failure resume from the failed step instead of from the beginning — the reliability pattern for multi-step flows with dependencies. Step-level retry alone (A) doesn't address the broader pattern; parallel execution (B) ignores dependencies (credit check before account setup); moving the service (C) doesn't add resumability.",
+    "corrected": false
+  },
+  {
+    "id": 181,
+    "category": "MCP & Tools",
+    "text": "A tool expects ISO 8601 dates but receives natural-language dates like 'next Tuesday'. The parameter is type: 'string'. What schema improvement fixes this?",
+    "options": [
+      { "key": "A", "text": "Add a regex pattern enforcing ISO 8601" },
+      { "key": "B", "text": "Add format: 'date' and a clear description ('Date in YYYY-MM-DD format')" },
+      { "key": "C", "text": "Change the type to 'date', which auto-formats to ISO 8601" },
+      { "key": "D", "text": "Server-side validation that rejects non-ISO dates with an error" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "A format: 'date' annotation plus an explicit description guides Claude to emit properly-formatted dates — descriptions are the primary signal for expected formats. A regex (A) may not be honored by all models; there's no JSON-Schema 'date' type that auto-formats (C); server-side rejection (D) adds round-trips instead of preventing the error.",
+    "corrected": false
+  },
+  {
+    "id": 182,
+    "category": "Prompt Caching",
+    "text": "Using the API with a 6,000-token system prompt and 3,000-token examples, you want to cache both on Sonnet 4.5+ / Claude 4 models. How should breakpoints be structured?",
+    "options": [
+      { "key": "A", "text": "A single breakpoint at the end of the system prompt only" },
+      { "key": "B", "text": "Breakpoints after the system prompt AND after the examples" },
+      { "key": "C", "text": "No explicit breakpoints needed — automatic caching handles it on these models" },
+      { "key": "D", "text": "A breakpoint only at the end of the examples, caching everything as one segment" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "On current models, automatic caching identifies and caches the stable prefix without you placing explicit breakpoints; manual breakpoints are mainly for fine-grained control or older models. So the simplest correct answer is to rely on automatic caching (the other options manually micro-manage what's handled for you).",
+    "corrected": false
+  },
+  {
+    "id": 183,
+    "category": "Claude API",
+    "text": "A tool_use was issued but execution was interrupted (server crash) with no corresponding tool_result. What must happen before continuing the conversation?",
+    "options": [
+      { "key": "A", "text": "Provide a tool_result for the pending tool_use — either by retrying the tool or returning an error result indicating the failure" },
+      { "key": "B", "text": "Send a new message without the tool_use block, pretending it never happened" },
+      { "key": "C", "text": "Retry the entire conversation from the beginning" },
+      { "key": "D", "text": "Send an empty assistant turn to reset state" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Every tool_use must be answered by a matching tool_result; if execution was interrupted, supply one — retry the tool or return an error tool_result (is_error: true). Removing the tool_use (B) violates the API contract; restarting (C) loses all progress; an empty assistant turn (D) isn't supported.",
+    "corrected": false
+  },
+  {
+    "id": 184,
+    "category": "Agent SDK & Hooks",
+    "text": "A team wants Claude Code to enforce a specific import ordering at the tool level. Which approach reliably enforces it?",
+    "options": [
+      { "key": "A", "text": "A PreToolUse hook that inspects the proposed edit content before it's applied and blocks non-compliant edits" },
+      { "key": "B", "text": "A PostToolUse hook that runs an import-sorting linter and rejects non-compliant edits after applying" },
+      { "key": "C", "text": "A custom slash command that sorts imports after each edit" },
+      { "key": "D", "text": "CLAUDE.md instructions describing the import order" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A PreToolUse hook inspects the proposed edit and can block it before it lands, giving deterministic enforcement before violations enter the codebase. PostToolUse (B) catches it only after the edit is applied; a slash command (C) needs manual invocation; CLAUDE.md (D) is guidance, not enforcement.",
+    "corrected": false
+  },
+  {
+    "id": 185,
+    "category": "Claude API",
+    "text": "An NL-to-SQL agent with tool_choice 'auto' sometimes answers from training knowledge instead of querying; forcing the run_query tool makes it generate SQL even for follow-up clarifying questions. Best solution?",
+    "options": [
+      { "key": "A", "text": "tool_choice 'auto' with a stronger system prompt to prefer queries" },
+      { "key": "B", "text": "Force the run_query tool on the first turn only, then switch to 'auto' for subsequent turns" },
+      { "key": "C", "text": "tool_choice 'any' so it always uses some tool" },
+      { "key": "D", "text": "Add a 'clarify' tool and keep forced tool choice" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Force run_query on the first turn to guarantee a database query, then switch to 'auto' so follow-ups (including clarifications) are handled naturally. 'auto' + prompt (A) is unreliable; 'any' (C) forces a tool on every turn including clarifications; adding a clarify tool under forced choice (D) is unnecessary complexity.",
+    "corrected": false
+  },
+  {
+    "id": 186,
+    "category": "Claude API",
+    "text": "An IDE extension must show Claude's reasoning while also getting a structured code suggestion. Can extended thinking and structured outputs be combined?",
+    "options": [
+      { "key": "A", "text": "Yes — but only with json_object mode, not json_schema" },
+      { "key": "B", "text": "No — they're mutually exclusive" },
+      { "key": "C", "text": "Yes — enable thinking and set the response schema; thinking blocks show reasoning while the final output follows the schema" },
+      { "key": "D", "text": "Yes — but only on Opus 4.6" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Thinking and structured outputs work together: the model reasons in thinking blocks and emits a final response conforming to the schema — ideal for transparency plus reliability. They aren't mutually exclusive (B), aren't limited to json_object (A), and aren't restricted to one model (D).",
+    "corrected": false
+  },
+  {
+    "id": 187,
+    "category": "Prompting",
+    "text": "An agent extracting from a 500-page manual reliably gets details from the beginning and end but misses the middle. What document-processing strategy helps?",
+    "options": [
+      { "key": "A", "text": "Increase max_tokens to process the full document" },
+      { "key": "B", "text": "Use extended thinking to improve attention" },
+      { "key": "C", "text": "Place important queries at the beginning, document after" },
+      { "key": "D", "text": "Structure the prompt with the document/context at the top and the questions at the bottom (recommended long-context layout)" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "The recommended long-context layout — data first, queries last — improves extraction, including from the middle of documents, by letting the model process the whole document before the task. max_tokens (A) is about output, thinking (B) doesn't fix attention placement, and query-first (C) reverses the recommended order.",
+    "corrected": false
+  },
+  {
+    "id": 188,
+    "category": "MCP & Tools",
+    "text": "A security team wants to restrict which domains an HTTP-making MCP tool can contact. Where should this be enforced?",
+    "options": [
+      { "key": "A", "text": "In the system prompt by listing allowed domains" },
+      { "key": "B", "text": "In the MCP server with an allowlist, plus a PreToolUse hook validating the URL against allowed domains before execution" },
+      { "key": "C", "text": "In the tool's description documenting allowed domains" },
+      { "key": "D", "text": "In the API config via an mcp_domain_allowlist parameter" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Security must be enforced in code: a server-side domain allowlist that rejects unauthorized requests, with a PreToolUse hook validating the URL as defense in depth. Prompt or description text (A, C) is bypassable guidance; there's no mcp_domain_allowlist API parameter (D).",
+    "corrected": false
+  },
+  {
+    "id": 189,
+    "category": "Context Management",
+    "text": "After hours and hundreds of tool calls, Claude Code repeats earlier actions and re-makes previously fixed mistakes, suggesting lost context. What is happening?",
+    "options": [
+      { "key": "A", "text": "The session exceeded the context window, triggering automatic compaction that lost some earlier detail" },
+      { "key": "B", "text": "The model's weights degraded from prolonged use" },
+      { "key": "C", "text": "Claude Code has a session timeout that resets context" },
+      { "key": "D", "text": "The terminal history buffer overflowed" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Exceeding the context window triggers automatic compaction, whose summary can drop specifics from early in the session — causing repeats and lost fixes. The fix is persisting key state to scratchpad files. Model weights don't degrade with use (B); there's no context-resetting timeout (C); a terminal buffer (D) isn't the cause.",
+    "corrected": false
+  },
+  {
+    "id": 190,
+    "category": "Claude Code",
+    "text": "An architect wants a 'skills marketplace' to share reusable agent behaviors across projects. What is the architectural foundation?",
+    "options": [
+      { "key": "A", "text": "Shared CLAUDE.md files in a central repository" },
+      { "key": "B", "text": "SKILL.md files packaging prompt instructions, tool access, and variable interfaces into shareable units" },
+      { "key": "C", "text": "MCP servers exposing skill endpoints" },
+      { "key": "D", "text": "Custom slash commands encapsulating workflows" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "SKILL.md files are self-contained units bundling instructions, allowed tools, variable/argument interfaces, and context injection — the natural shareable building block. CLAUDE.md (A) lacks tool/variable interfaces; MCP servers (C) are for external service integration; slash commands (D) don't encapsulate the full behavior definition.",
+    "corrected": false
+  },
+  {
+    "id": 191,
+    "category": "Claude Code",
+    "text": "A hook meant to block dangerous file deletions never triggers; the developer's hook config matched a 'Delete' tool. What tool does Claude Code actually use for file deletion?",
+    "options": [
+      { "key": "A", "text": "A dedicated Delete tool" },
+      { "key": "B", "text": "A RemoveFile tool with confirmation prompts" },
+      { "key": "C", "text": "A FileSystem.delete method" },
+      { "key": "D", "text": "The Bash tool with an rm command — there is no dedicated delete tool" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Claude Code deletes files via the Bash tool (e.g., rm); there's no dedicated Delete/RemoveFile tool. To gate deletions, hook PreToolUse on Bash and inspect the command for rm/delete patterns. A, B, and C name tools that don't exist.",
+    "corrected": false
+  },
+  {
+    "id": 192,
+    "category": "MCP & Tools",
+    "text": "A HIPAA-regulated agent's error messages sometimes include patient identifiers from the failed record. What design principle should apply?",
+    "options": [
+      { "key": "A", "text": "Disable error messages entirely" },
+      { "key": "B", "text": "Route all errors to a human to sanitize manually" },
+      { "key": "C", "text": "Use structured error responses with errorCategory, isRetryable, and sanitized messages that never include raw input data" },
+      { "key": "D", "text": "Encrypt error messages with an admin-only key" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Structured, sanitized errors (category, retryability, no raw input) give the agent recovery information without leaking PII — reference records by a non-sensitive ID. Disabling errors (A) loses diagnostics; manual sanitization (B) doesn't scale; encryption (D) adds complexity without stopping the leak into the conversation.",
+    "corrected": false
+  },
+  {
+    "id": 193,
+    "category": "Claude Code",
+    "text": "A CI pipeline needs strictly-JSON output for downstream tooling and must prevent Claude from reading any local config files. Which flags accomplish both?",
+    "options": [
+      { "key": "A", "text": "--json and --no-config" },
+      { "key": "B", "text": "--output-format json and --skip-config" },
+      { "key": "C", "text": "--format=json and --headless" },
+      { "key": "D", "text": "--json-schema with a schema, plus --bare (which disables CLAUDE.md/config loading)" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "--json-schema forces well-formed schema-conforming JSON, and --bare disables auto-discovery of CLAUDE.md and other local config for reproducible runs. The other options use flag names that aren't the documented ones. (Confirm against your Claude Code version.)",
+    "corrected": false
+  },
+  {
+    "id": 194,
+    "category": "Claude API",
+    "text": "A security-analysis system uses effort='low' universally but wants deeper analysis on critical vulnerabilities. Recommended approach for varying effort by criticality?",
+    "options": [
+      { "key": "A", "text": "Use effort='high' for everything and accept the cost" },
+      { "key": "B", "text": "A routing layer that sets effort by severity: low for informational, medium for medium severity, high for critical" },
+      { "key": "C", "text": "Use extended thinking for critical vulnerabilities instead of changing effort" },
+      { "key": "D", "text": "Train a classifier to choose the effort level" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Mapping severity to effort optimizes the cost/quality tradeoff — cheap fast processing for low severity, deep analysis for critical. Uniform high (A) wastes budget; thinking alone (C) doesn't address cost allocation; a trained classifier (D) is unnecessary complexity when severity is already known.",
+    "corrected": false
+  },
+  {
+    "id": 195,
+    "category": "Multi-Agent Systems",
+    "text": "A researcher subagent gets 'stuck' in recursive web searches, making dozens of tool calls without converging. What architectural pattern prevents this?",
+    "options": [
+      { "key": "A", "text": "Set an iteration limit for the researcher and require it to report findings at the limit even if incomplete" },
+      { "key": "B", "text": "Increase the researcher's context window" },
+      { "key": "C", "text": "Remove the researcher and have the main agent do research directly" },
+      { "key": "D", "text": "A PostToolUse hook that terminates after exactly 10 tool calls" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "An iteration limit with mandatory reporting forces convergence and progress even if results are partial — bounding runaway exploration. A bigger window (B) doesn't make it converge; removing the subagent (C) centralizes the problem; a hard 10-call cutoff (D) is too rigid for varied tasks.",
+    "corrected": false
+  },
+  {
+    "id": 196,
+    "category": "Prompt Caching",
+    "text": "An app sends 10,000 messages/hour with an identical 5,000-token system prompt. With automatic caching, roughly how much is saved on the system-prompt portion vs. uncached?",
+    "options": [
+      { "key": "A", "text": "~90% — cache reads cost about 10% of base input price" },
+      { "key": "B", "text": "~50% — cached reads are half price" },
+      { "key": "C", "text": "~10% — caching is a marginal reduction" },
+      { "key": "D", "text": "100% — cached tokens are free" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Cache reads cost roughly 10% of the base input price, so the cached prefix is ~90% cheaper; the small write premium is amortized across thousands of reads. It's not 50% (B), not marginal (C), and not free (D).",
+    "corrected": false
+  },
+  {
+    "id": 197,
+    "category": "Agent SDK & Hooks",
+    "text": "A 'turn' in the Agent SDK makes multiple Claude API calls with tool use. Which metric counts the agent turns within an API call?",
+    "options": [
+      { "key": "A", "text": "Number of API calls times input tokens" },
+      { "key": "B", "text": "Number of tool_use blocks across all responses" },
+      { "key": "C", "text": "The usage.iterations field, which counts agent turns within an API call" },
+      { "key": "D", "text": "Total output tokens divided by average tokens per turn" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "usage.iterations counts the agent turns (model invocations) within the loop, the metric used for this purpose. Multiplying calls by tokens (A) doesn't map to turns; counting tool_use blocks (B) counts tool calls, not iterations; a division estimate (D) is an approximation.",
+    "corrected": false
+  },
+  {
+    "id": 198,
+    "category": "Structured Outputs",
+    "text": "A structured-output pipeline extracting from papers needs Claude to indicate uncertainty. Required fields are title, authors, abstract. How should uncertain fields be handled?",
+    "options": [
+      { "key": "A", "text": "Make all fields optional so Claude can omit uncertain ones" },
+      { "key": "B", "text": "Add a confidence score alongside each field" },
+      { "key": "C", "text": "Use a nullable structured pattern per field: {value: string|null, confidence: 'high'|'medium'|'low', reasoning: string}" },
+      { "key": "D", "text": "Let Claude add uncertainty notes in an explanation field" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "A nullable value plus an explicit confidence level and reasoning preserves the schema while letting the model express uncertainty clearly per field. Making everything optional (A) loses required-field guarantees; a bare confidence score (B) doesn't say what the value would be; free-text notes (D) lack structure.",
+    "corrected": false
+  },
+  {
+    "id": 199,
+    "category": "Evaluation",
+    "text": "A team wants to test that their agent handles a rare MCP tool timeout (occurs ~1 in 10,000 in production). How can they reliably test it?",
+    "options": [
+      { "key": "A", "text": "Send 10,000 test requests and wait for it to occur naturally" },
+      { "key": "B", "text": "Test only the happy path and monitor for the timeout in production" },
+      { "key": "C", "text": "Set the MCP server timeout to 1ms to force frequent timeouts" },
+      { "key": "D", "text": "Mock the MCP tool to return a timeout error and verify the agent's retry/fallback behavior" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Mocking the tool to deterministically return a timeout lets you test the agent's retry/fallback/error messaging on demand. Waiting for natural occurrence (A) is wasteful and unreliable; happy-path-only (B) skips the behavior; a 1ms timeout (C) can cause unrelated cascading failures.",
+    "corrected": false
+  },
+  {
+    "id": 200,
+    "category": "Context Management",
+    "text": "An agent manages a 12-state order-processing state machine, and standard compaction loses the current-state tracking. What configuration preserves the state-machine context through compaction?",
+    "options": [
+      { "key": "A", "text": "Increase the context window to avoid triggering compaction" },
+      { "key": "B", "text": "Store the current state in a scratchpad file referenced after compaction" },
+      { "key": "C", "text": "Use custom compaction instructions that explicitly preserve current state, valid transitions, and pending actions" },
+      { "key": "D", "text": "Disable compaction and manually truncate old messages" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Custom compaction instructions let you require the summarizer to retain the state machine's current state, transitions, and pending actions. A bigger window (A) only delays the problem; a scratchpad file (B) works but adds file I/O; disabling compaction (D) is fragile and loses old context entirely. (B is a reasonable alternative; C keeps it within the compaction mechanism.)",
+    "corrected": false
   }
 ]
