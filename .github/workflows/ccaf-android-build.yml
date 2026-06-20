@@ -1,0 +1,82 @@
+name: Build CCA-F Android APK
+
+# Builds the offline CCA-F Review study app (frontend-ccaf/). Mirrors the
+# QuizForge/PCA workflow but for the second app; reuses the same signing key
+# (different applicationId, so it installs alongside QuizForge).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend-ccaf/**'
+      - '.github/workflows/ccaf-android-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend-ccaf/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - run: npm ci
+        working-directory: frontend-ccaf
+
+      # Offline, self-contained study app (bundles the corrected CCA-F
+      # questions.json; no backend needed).
+      - run: npm run build
+        working-directory: frontend-ccaf
+        env:
+          VITE_STANDALONE: 'true'
+
+      - run: npx cap sync android
+        working-directory: frontend-ccaf
+
+      - name: Decode release keystore
+        run: echo "$KEYSTORE_BASE64" | base64 -d > frontend-ccaf/android/app/release.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease
+        working-directory: frontend-ccaf/android
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/frontend-ccaf/android/app/release.jks
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      # Date-based version, e.g. 2026.06.19.1642 (unique per minute).
+      - id: ver
+        run: echo "v=$(date -u +'%Y.%m.%d.%H%M')" >> "$GITHUB_OUTPUT"
+
+      - run: cp frontend-ccaf/android/app/build/outputs/apk/release/app-release.apk CCA-F-Review-${{ steps.ver.outputs.v }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CCA-F-Review-${{ steps.ver.outputs.v }}
+          path: CCA-F-Review-${{ steps.ver.outputs.v }}.apk
+
+      - uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: ccaf-v${{ steps.ver.outputs.v }}
+          name: CCA-F Review ${{ steps.ver.outputs.v }}
+          body: |
+            CCA-F Review (Claude Certified Architect — Foundations) Android APK — version ${{ steps.ver.outputs.v }}
+            Built from commit ${{ github.sha }}. Download the .apk below and sideload it.
+          files: CCA-F-Review-${{ steps.ver.outputs.v }}.apk
