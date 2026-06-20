@@ -3748,5 +3748,755 @@
     "correctAnswer": ["B"],
     "explanation": "A schema mirroring the calculation hierarchy captures verifiable intermediate values, while enabling thinking provides reasoning visibility — both at once. Putting values in thinking blocks (A) isn't reliably parseable; separate calls (C) lose context between steps; per-step tools (D) add unnecessary complexity.",
     "corrected": false
+  },
+  {
+    "id": 251,
+    "category": "Agent Design",
+    "text": "An agent handles both simple lookups ('status of order #1234?') and complex investigations ('why was #1234 delayed and what's the impact?'). Both currently use the same pipeline with extended thinking, making simple lookups slow. What architecture balances speed and depth?",
+    "options": [
+      { "key": "A", "text": "Disable extended thinking for all requests" },
+      { "key": "B", "text": "Let users select 'quick' or 'detailed' mode" },
+      { "key": "C", "text": "Add a timeout that kills thinking after 3 seconds for simple queries" },
+      { "key": "D", "text": "Use a classifier to route simple lookups (low effort, no thinking) to a fast path and complex investigations (high effort, thinking) to a deep path" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "A complexity classifier sends simple lookups down a fast, low-effort path and complex cases down a thorough, thinking-enabled path — optimizing latency and quality. Disabling thinking (A) loses depth; making users choose (B) adds friction; a hard thinking timeout (C) produces inconsistent results.",
+    "corrected": false
+  },
+  {
+    "id": 252,
+    "category": "MCP & Tools",
+    "text": "An image-processing MCP tool only supports HTTP URLs, but Claude sometimes passes a base64 data URL. How should the tool handle this gracefully?",
+    "options": [
+      { "key": "A", "text": "Return 'Invalid URL format' with no further guidance" },
+      { "key": "B", "text": "Accept data URLs by decoding the base64 inside the tool" },
+      { "key": "C", "text": "Return a structured error stating only HTTP/HTTPS URLs are supported, that data URLs can't be processed, and asking for the image's HTTP URL (isRetryable: true)" },
+      { "key": "D", "text": "Silently ignore the data URL and return empty results" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "A structured, specific error (the constraint, the reason, and that it's retryable) lets Claude self-correct and supply a valid URL. A vague error (A) gives no guidance; accepting data URLs (B) adds scope that may be unwanted; silent empty results (D) hide the failure.",
+    "corrected": false
+  },
+  {
+    "id": 253,
+    "category": "Claude Code",
+    "text": "After /init generates a CLAUDE.md from repository analysis, how should the team customize it?",
+    "options": [
+      { "key": "A", "text": "Delete the generated file and write one from scratch" },
+      { "key": "B", "text": "Keep the generated file as a base and iteratively refine it — add project conventions, remove irrelevant sections, and commit the result" },
+      { "key": "C", "text": "Generate multiple CLAUDE.md files and merge the best parts" },
+      { "key": "D", "text": "Never modify /init output — it's optimized for the repo" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "/init produces a solid starting point; keep it and iterate — add team conventions, trim auto-detected rules that don't apply, and commit. Starting from scratch (A) discards useful detected context; generating multiples (C) is redundant; never modifying it (D) misses the customization opportunity.",
+    "corrected": false
+  },
+  {
+    "id": 254,
+    "category": "Structured Outputs",
+    "text": "A content-moderation system classifies content as safe/questionable/unsafe and needs a legal audit trail of why each decision was made. Which API features support this?",
+    "options": [
+      { "key": "A", "text": "Enable extended thinking to capture reasoning, and use structured output for the classification — thinking blocks form the audit trail, structured output gives the consistent decision" },
+      { "key": "B", "text": "Use the Messages API with logging of all request/response pairs" },
+      { "key": "C", "text": "Separate API calls for classification and explanation" },
+      { "key": "D", "text": "Store the raw API response JSON as the audit trail" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Thinking blocks capture the 'why' (audit trail) while structured output gives a consistent, parseable decision — together a complete record. Logging request/response (B) lacks the decision reasoning; two calls (C) double cost; storing raw JSON (D) captures the decision but not the deliberation.",
+    "corrected": false
+  },
+  {
+    "id": 255,
+    "category": "Context Management",
+    "text": "An agent injects all 50 prior customer interactions (~100K tokens) into each new interaction for personalization, leaving little room for the current conversation. Better approach?",
+    "options": [
+      { "key": "A", "text": "Summarize the 50 interactions into a concise (~5K token) customer profile and inject that instead" },
+      { "key": "B", "text": "Retrieve only the 3–5 most relevant prior interactions via embeddings and inject those" },
+      { "key": "C", "text": "Switch to a 1M-token model to fit all history" },
+      { "key": "D", "text": "Store interactions in a tool Claude queries on demand" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A concise customer profile distilled from the 50 interactions preserves the durable signal (preferences, recurring issues, style) at a fraction of the tokens. Relevance retrieval (B) is reasonable but may miss broad patterns; a bigger model (C) is expensive and still wasteful; an on-demand tool (D) adds round trips. (B is a defensible alternative.)",
+    "corrected": false
+  },
+  {
+    "id": 256,
+    "category": "Multi-Agent Systems",
+    "text": "In a testing multi-agent system, Agent B discovers a test-environment misconfiguration affecting all remaining tests. How should it communicate this blocking issue to the orchestrator?",
+    "options": [
+      { "key": "A", "text": "Continue executing tests and note failures for Agent C" },
+      { "key": "B", "text": "Stop and return a generic error message" },
+      { "key": "C", "text": "Return a structured status with escalation metadata: {status:'blocked', reason:'environment_misconfiguration', details, blockedTests, suggestedAction}" },
+      { "key": "D", "text": "Call Agent A to regenerate tests that work with the misconfigured environment" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Structured escalation metadata (status, reason, affected tests, suggested remediation) lets the orchestrator act intelligently. Continuing against a known-bad environment (A) wastes resources; a generic error (B) lacks actionable detail; regenerating tests to fit a broken environment (D) works around the real problem.",
+    "corrected": false
+  },
+  {
+    "id": 257,
+    "category": "Claude Code",
+    "text": "An MCP server in Claude Code needs sensitive credentials kept out of version control. Where should they be configured?",
+    "options": [
+      { "key": "A", "text": "Directly in .claude/settings.json in the MCP server config" },
+      { "key": "B", "text": "In environment variables referenced via ${VAR_NAME} expansion in the config" },
+      { "key": "C", "text": "In CLAUDE.md with instructions on where to find credentials" },
+      { "key": "D", "text": "Hardcoded in the MCP server source code" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Reference credentials via ${VAR_NAME} env-var expansion so the committed config stays secret-free and each environment supplies its own value. Hardcoding in settings (A) or source (D) leaks secrets; putting them in CLAUDE.md (C) exposes them in a documentation file.",
+    "corrected": false
+  },
+  {
+    "id": 258,
+    "category": "Agent SDK & Hooks",
+    "text": "An architect wants a 'dry run' mode where all tool calls are simulated without executing, for testing behavior and estimating cost. Most effective implementation?",
+    "options": [
+      { "key": "A", "text": "Add 'this is a dry run, don't execute anything' to the system prompt" },
+      { "key": "B", "text": "Replace all tool implementations with mocks that return realistic responses" },
+      { "key": "C", "text": "Use PreToolUse hooks that intercept all tool calls, log them, and return simulated results without executing the real tools" },
+      { "key": "D", "text": "Set effort='low' to minimize tool-call impact" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "PreToolUse hooks intercept every call, log it (for analysis/cost), and return simulated results without side effects — all without changing tool code. A prompt instruction (A) is unreliable; rewriting every tool as a mock (B) is more invasive; low effort (D) doesn't prevent execution.",
+    "corrected": false
+  },
+  {
+    "id": 259,
+    "category": "Claude API",
+    "text": "A developer wants to count tokens before sending requests to avoid exceeding context limits. What does the documentation recommend?",
+    "options": [
+      { "key": "A", "text": "Use the token-counting API endpoint to get exact counts before sending" },
+      { "key": "B", "text": "Use a third-party tokenizer library to estimate locally" },
+      { "key": "C", "text": "Estimate ~4 characters per token for English" },
+      { "key": "D", "text": "Send the request and read the usage field afterward" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "The count_tokens endpoint returns exact, model-specific counts for pre-flight checks. Third-party tokenizers (B) and character heuristics (C) are inaccurate for Claude; reading usage after sending (D) is post-hoc, not pre-flight validation.",
+    "corrected": false
+  },
+  {
+    "id": 260,
+    "category": "Prompting",
+    "text": "A legal agent must cross-reference clauses across a 200-page contract; loading the full document and asking for all cross-references gives inconsistent results (some found, some missed). What strategy improves reliability?",
+    "options": [
+      { "key": "A", "text": "Use a larger model for better attention" },
+      { "key": "B", "text": "Split the document into overlapping sections, find cross-references per section, then merge and dedupe" },
+      { "key": "C", "text": "Index by clause number, then query specific clause pairs" },
+      { "key": "D", "text": "Use extended thinking with a large budget so Claude methodically works through the whole document tracking cross-references" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "For a document that fits in context, extended thinking with ample budget lets the model work through it methodically and track cross-references — more reliable than chunking, which can miss references that span sections. A bigger model (A) helps but isn't sufficient alone; per-section chunking (B) misses cross-section links; clause-pair querying (C) requires knowing which pairs to check in advance. (B and D are both defensible; D keeps cross-section context intact.)",
+    "corrected": false
+  },
+  {
+    "id": 261,
+    "category": "MCP & Tools",
+    "text": "An agent's rapid tool calls can exceed a third-party API's 100 requests/minute rate limit. Where should rate limiting be implemented?",
+    "options": [
+      { "key": "A", "text": "In the system prompt: 'wait at least 600ms between calls'" },
+      { "key": "B", "text": "In a PreToolUse hook that adds a delay between invocations" },
+      { "key": "C", "text": "In the MCP server, using a token-bucket algorithm that queues requests exceeding the limit" },
+      { "key": "D", "text": "Via a Claude API request_delay parameter" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Implement rate limiting in the MCP server (e.g., a token bucket) so it's transparent to the agent and handles bursts by queuing. A prompt instruction (A) is imprecise; a hook delay (B) penalizes all calls indiscriminately; there's no request_delay API parameter (D).",
+    "corrected": false
+  },
+  {
+    "id": 262,
+    "category": "Prompting",
+    "text": "To generate high-quality unit tests for a complex function, given the implementation and existing tests for similar functions, what prompting strategy is best?",
+    "options": [
+      { "key": "A", "text": "Send only the function and ask for tests" },
+      { "key": "B", "text": "Send the function, its type definitions, and 2–3 example test files for similar functions as reference, to calibrate testing style, coverage, and assertion conventions" },
+      { "key": "C", "text": "Ask Claude to list all edge cases first, then write one test per case" },
+      { "key": "D", "text": "Send the function plus a testing-framework docs page" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Providing the function, types, and example tests (few-shot) calibrates Claude to the team's conventions — assertion style, mocking, naming, coverage patterns. The function alone (A) lacks calibration; edge-case-first (C) may not match conventions; framework docs (D) don't convey team patterns.",
+    "corrected": false
+  },
+  {
+    "id": 263,
+    "category": "Claude API",
+    "text": "A team uses citations to display inline source links in a RAG app. What does the citations feature provide?",
+    "options": [
+      { "key": "A", "text": "URLs to source documents used during training" },
+      { "key": "B", "text": "A list of the document IDs most relevant to the response" },
+      { "key": "C", "text": "Character-level pointers back to specific locations in the provided input documents, showing exactly which parts Claude referenced for each claim" },
+      { "key": "D", "text": "A confidence score for how well-supported each claim is" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Citations give character-level references into the provided input documents, identifying exactly which passages support each claim — enabling highlighting/linking. They aren't training-data URLs (A), just document IDs (B), or confidence scores (D).",
+    "corrected": false
+  },
+  {
+    "id": 264,
+    "category": "Claude Code",
+    "text": "A CI pipeline using headless mode with --json-schema sometimes gets extra explanation text alongside the JSON. What ensures only the schema output is returned?",
+    "options": [
+      { "key": "A", "text": "Using --json-schema in headless mode already yields only schema-compliant JSON output" },
+      { "key": "B", "text": "Add --quiet to suppress all logging" },
+      { "key": "C", "text": "Add --json-only to suppress non-JSON output" },
+      { "key": "D", "text": "Pipe output through jq to extract the JSON" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "In headless mode, --json-schema is designed to emit only schema-conforming JSON suitable for machine consumption. There's no --json-only flag (C); --quiet (B) suppresses logs but isn't the mechanism for schema output; jq (D) is a workaround. (Confirm flag behavior against your version.)",
+    "corrected": false
+  },
+  {
+    "id": 265,
+    "category": "Agent Design",
+    "text": "A hospital chatbot must NEVER give specific medical diagnoses while remaining helpful on general health info. A system-prompt-only attempt failed when a patient described symptoms and Claude offered a tentative diagnosis. Correct implementation?",
+    "options": [
+      { "key": "A", "text": "Add ABSOLUTELY-NEVER language to the system prompt" },
+      { "key": "B", "text": "Two-layer approach: system prompt for guidance plus a separate classifier that screens every response and blocks diagnostic statements before they reach the patient" },
+      { "key": "C", "text": "A PostToolUse classification step that checks responses and regenerates if diagnostic" },
+      { "key": "D", "text": "Limit conversation length to prevent detailed symptom discussion" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Safety-critical filtering needs defense in depth: prompt guidance plus a deterministic classifier screening every outgoing response. More emphatic prompting (A) is still probabilistic; option C is essentially a single-layer check and (in this API context) less robust than a dedicated screening layer; limiting length (D) degrades the experience without ensuring safety.",
+    "corrected": false
+  },
+  {
+    "id": 266,
+    "category": "MCP & Tools",
+    "text": "An MCP tool wraps a SOAP API returning deeply-nested, namespaced XML. What transformation should the tool apply before returning results to Claude?",
+    "options": [
+      { "key": "A", "text": "Return the raw XML — Claude parses XML natively" },
+      { "key": "B", "text": "Base64-encode the XML and return it as a string" },
+      { "key": "C", "text": "Convert to a flat key-value format" },
+      { "key": "D", "text": "Convert to simplified JSON that strips namespaces and flattens unnecessary nesting, keeping only business-relevant fields" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Return clean, high-signal JSON with only the relevant fields — better for context efficiency and the model's ability to use the data. Raw XML (A) wastes tokens on namespace overhead; base64 (B) makes it unusable; flat key-value (C) can lose meaningful hierarchy.",
+    "corrected": false
+  },
+  {
+    "id": 267,
+    "category": "Prompt Caching",
+    "text": "An app has a 3K system prompt, a 10K knowledge base, a 2K conversation history, and ~200-token user messages, on Sonnet 4.5 (1024-token cache minimum). Which portions should be cached?",
+    "options": [
+      { "key": "A", "text": "System prompt (3K) + knowledge base (10K) as a single cached prefix — both are stable and well above the minimum" },
+      { "key": "B", "text": "Only the system prompt (3K)" },
+      { "key": "C", "text": "Everything, including the conversation history" },
+      { "key": "D", "text": "Only the knowledge base, as the largest component" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "The stable system prompt + knowledge base form a 13K shared prefix worth caching across requests; the conversation history changes per turn and isn't reliably cacheable. Caching only the system prompt (B) misses the larger KB savings; caching everything (C) wastes writes on volatile history; KB-only (D) skips the system-prompt prefix.",
+    "corrected": false
+  },
+  {
+    "id": 268,
+    "category": "Structured Outputs",
+    "text": "A quiz generator must produce exactly 4 options with one correct answer (strict mode), but occasionally two options are semantically identical (e.g., 'Use a load balancer' vs 'Implement load balancing'). What additional quality measure is needed?",
+    "options": [
+      { "key": "A", "text": "Add a uniqueItems constraint in the JSON schema" },
+      { "key": "B", "text": "An application-layer semantic-similarity check comparing option pairs and flagging near-duplicates for regeneration" },
+      { "key": "C", "text": "Use extended thinking to verify distinctness before generating" },
+      { "key": "D", "text": "A system-prompt instruction that options must be semantically distinct" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Schema uniqueItems catches only exact duplicates; a semantic-similarity check (e.g., embeddings) catches near-duplicate options and flags them for regeneration. Thinking (C) and a prompt instruction (D) help but don't reliably catch semantic overlap.",
+    "corrected": false
+  },
+  {
+    "id": 269,
+    "category": "Agent Design",
+    "text": "A support agent should detect frustration (repeated questions, escalating language) and switch handling. Where should frustration-detection logic live?",
+    "options": [
+      { "key": "A", "text": "In the system prompt: 'detect frustration and adjust'" },
+      { "key": "B", "text": "In a PostToolUse hook monitoring the conversation" },
+      { "key": "C", "text": "As a separate sentiment tool the agent calls periodically" },
+      { "key": "D", "text": "In the orchestrator, as a classifier analyzing each customer message and adjusting the system prompt/routing based on sentiment" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Sentiment detection is a cross-cutting concern best handled in the orchestrator: classify each message and dynamically adjust tone or route to an empathy-focused path or human. Self-detection via prompt (A) is unreliable; a PostToolUse hook (B) only sees tool interactions; a periodic tool (C) adds call overhead.",
+    "corrected": false
+  },
+  {
+    "id": 270,
+    "category": "Context Management",
+    "text": "In a long code-review session, after compaction Claude re-reviews files it already covered. What technique preserves review progress through compaction?",
+    "options": [
+      { "key": "A", "text": "Custom compaction instructions that explicitly preserve the list of reviewed files and their status" },
+      { "key": "B", "text": "Maintain a REVIEW_PROGRESS.md scratchpad of completed reviews and read it after compaction" },
+      { "key": "C", "text": "Increase the compaction summary length to capture all reviewed files" },
+      { "key": "D", "text": "Disable compaction and manage context manually" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Custom compaction instructions can require the summarizer to retain the reviewed-files list and status, so progress survives without external files. A scratchpad (B) also works but adds file I/O; a longer summary (C) isn't a precise control; disabling compaction (D) is fragile for long sessions. (B is a solid alternative.)",
+    "corrected": false
+  },
+  {
+    "id": 271,
+    "category": "Prompting",
+    "text": "Claude generates regex from natural-language descriptions, but the regex often fails edge cases. What approach improves quality?",
+    "options": [
+      { "key": "A", "text": "Use a larger model" },
+      { "key": "B", "text": "Ask Claude to generate multiple variants and pick the best" },
+      { "key": "C", "text": "Use extended thinking to reason through edge cases" },
+      { "key": "D", "text": "Provide test strings (matching and non-matching), then use a tool that tests the generated regex against all examples and returns failures for iteration" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "A test-driven loop — provide expected matches/non-matches, run the regex against them, feed failures back — verifies correctness and drives iteration. A bigger model (A) or thinking (C) doesn't verify against concrete cases; generating variants (B) without testing doesn't guarantee correctness.",
+    "corrected": false
+  },
+  {
+    "id": 272,
+    "category": "MCP & Tools",
+    "text": "An enterprise agent platform serves IT, HR, and Finance, each needing different tools and access controls. How should tool access be scoped?",
+    "options": [
+      { "key": "A", "text": "Give all departments all tools and rely on prompt instructions for scope" },
+      { "key": "B", "text": "Separate Claude API keys per department with different tool permissions" },
+      { "key": "C", "text": "Per-agent tool configurations exposing only department-appropriate tools, with MCP server permissions enforcing access at the execution layer" },
+      { "key": "D", "text": "A single MCP server that checks the caller's department before returning results" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Per-agent tool configs ensure each department's agent only sees its tools, with server-side permissions as a second enforcement layer — least privilege. All-tools-with-prompt-scope (A) violates least privilege; API keys (B) don't scope tools that way; a single server checking department (D) centralizes but doesn't restrict tool visibility.",
+    "corrected": false
+  },
+  {
+    "id": 273,
+    "category": "Context Management",
+    "text": "A 4-step pipeline (extract → normalize → analyze → report) has 40K-token normalized data after step 2, and you worry step 3 loses accuracy over long context. What prompting pattern optimizes the pipeline?",
+    "options": [
+      { "key": "A", "text": "Run all four steps in one conversation to maintain context" },
+      { "key": "B", "text": "Combine steps 1–2 and 3–4 into two larger steps" },
+      { "key": "C", "text": "Run all steps in parallel in separate conversations" },
+      { "key": "D", "text": "Use prompt chaining — each step is a separate API call passing only the necessary output to the next" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Prompt chaining with curated inputs keeps each step focused: step 3 receives only the 40K normalized data, not the full prior conversation, leaving maximum room for analysis. One conversation (A) accumulates all intermediate context; merging steps (B) doesn't isolate context; parallel separate conversations (C) breaks the data-flow dependency.",
+    "corrected": false
+  },
+  {
+    "id": 274,
+    "category": "Prompting",
+    "text": "An agent must comply with a 15-page brand-voice guide (placed in the system prompt). Output generally matches, but occasionally goes off-brand for edge-case topics not covered. How to improve consistency?",
+    "options": [
+      { "key": "A", "text": "Reduce the brand guide to key bullet points" },
+      { "key": "B", "text": "Add few-shot examples applying the brand voice across scenarios, including edge cases similar to the problematic ones" },
+      { "key": "C", "text": "A PostToolUse classifier that checks every response and regenerates if off-brand" },
+      { "key": "D", "text": "Fine-tune a custom model on brand-compliant responses" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Few-shot examples show HOW to apply the brand voice to varied (including edge-case) scenarios, helping the model generalize beyond what the guide spells out. Trimming the guide (A) may lose nuance; a classifier (C) adds latency/cost; fine-tuning (D) is overkill for a prompt-engineering problem.",
+    "corrected": false
+  },
+  {
+    "id": 275,
+    "category": "Context Management",
+    "text": "A Claude Code session becomes sluggish with degraded quality after extended use, suggesting context saturation. Recommended maintenance approach?",
+    "options": [
+      { "key": "A", "text": "Restart Claude Code for a fresh window" },
+      { "key": "B", "text": "Temporarily delete all CLAUDE.md files to reduce context" },
+      { "key": "C", "text": "Use /compact to trigger compaction, then verify Claude's understanding by asking it to summarize the current task" },
+      { "key": "D", "text": "Switch to a larger-context model" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "/compact reduces context, and a quick state-verification (ask Claude to summarize what it knows) confirms what survived and surfaces anything to re-provide. Restarting (A) loses all context; deleting CLAUDE.md (B) removes important config; switching models (D) may be unavailable and doesn't address accumulation.",
+    "corrected": false
+  },
+  {
+    "id": 276,
+    "category": "Agent Design",
+    "text": "A fraud-detection agent flags 30% of transactions, 90% of which are false positives. Blocking legit transactions frustrates customers; missing fraud is costly. What analysis framework should be applied?",
+    "options": [
+      { "key": "A", "text": "Lower the sensitivity threshold to reduce false positives" },
+      { "key": "B", "text": "A tiered confidence system: high-confidence → block; medium → add friction (2FA); low → allow with monitoring, each with its own precision/recall tradeoff" },
+      { "key": "C", "text": "Remove automated blocking and rely on post-transaction review" },
+      { "key": "D", "text": "Train a separate classifier to pre-filter results" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Map confidence to graduated actions — block, add friction, or allow-with-monitoring — so each tier balances precision and recall appropriately. A single lower threshold (A) bluntly trades one error for another; removing blocking (C) and a pre-filter classifier (D) address symptoms rather than the decision framework.",
+    "corrected": false
+  },
+  {
+    "id": 277,
+    "category": "MCP & Tools",
+    "text": "A search MCP tool returns URLs, but Claude sometimes fabricates similar-looking URLs that don't exist. What server-side/attribution measure helps prevent this?",
+    "options": [
+      { "key": "A", "text": "A system-prompt instruction to only use URLs from tool results" },
+      { "key": "B", "text": "Use citations to track which URLs come from tool results vs. model generation, so the app can verify attribution" },
+      { "key": "C", "text": "Client-side validation checking all URLs in the response" },
+      { "key": "D", "text": "Return URLs as structured data and have Claude reference results by ID rather than regenerating URLs" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Citations let the app verify that a URL actually came from a tool result rather than being model-generated, catching fabrication via attribution. A prompt rule (A) is unreliable; client-side validation (C) checks existence but not provenance; reference-by-ID (D) helps but doesn't verify attribution. (B and D are complementary.)",
+    "corrected": false
+  },
+  {
+    "id": 278,
+    "category": "Claude Code",
+    "text": "A team adds an MCP tool that can execute shell commands; the agent gets a permission error using it. Where are MCP tool permissions managed in Claude Code?",
+    "options": [
+      { "key": "A", "text": "In settings (e.g. .claude/settings.json) via allowedTools/blockedTools arrays, with glob patterns for MCP tool names" },
+      { "key": "B", "text": "In CLAUDE.md under an allowed_tools section" },
+      { "key": "C", "text": "In the MCP server configuration file" },
+      { "key": "D", "text": "Per-conversation, reset each time" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Claude Code manages MCP tool permissions in settings files via allowedTools/blockedTools (supporting glob patterns like mcp_server_*). CLAUDE.md (B) is for instructions; the server config (C) doesn't control Claude Code's permissions; permissions persist rather than resetting per conversation (D).",
+    "corrected": false
+  },
+  {
+    "id": 279,
+    "category": "Claude API",
+    "text": "A RAG app uses citations (character-level indices) and wants to render inline citations. How should the client render them?",
+    "options": [
+      { "key": "A", "text": "Insert reference markers using the indices, linking each to the specific source passage" },
+      { "key": "B", "text": "Append all citations as footnotes at the end" },
+      { "key": "C", "text": "All of these are valid rendering approaches depending on UX requirements" },
+      { "key": "D", "text": "A sidebar with source highlights shown on hover over cited text" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Citations provide the raw character-level data; the client chooses the presentation — inline markers, footnotes, hover sidebars, or highlights — based on UX needs. All listed approaches are valid uses of the citation data.",
+    "corrected": false
+  },
+  {
+    "id": 280,
+    "category": "Agent Design",
+    "text": "An agent processes user-uploaded CSVs ranging from 100 rows to 1 million rows. Small files work in context; large files can't fit. What scalable architecture handles both?",
+    "options": [
+      { "key": "A", "text": "Always process the full CSV, relying on compaction if needed" },
+      { "key": "B", "text": "Always chunk into 100-row segments processed sequentially" },
+      { "key": "C", "text": "For small files (<~5K rows) include directly in context; for large files load into a database and give the agent SQL query tools to explore on demand" },
+      { "key": "D", "text": "Convert all CSVs to summary statistics before processing" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Size-based routing handles both: small files go in context (full visibility, no overhead); large files go to a queryable store the agent explores on demand. Always-full (A) can't fit 1M rows; always-chunk (B) is inefficient for small files; summary-only (D) loses row-level access.",
+    "corrected": false
+  },
+  {
+    "id": 281,
+    "category": "Evaluation",
+    "text": "A team must test whether an agent handles tool failures gracefully across 50 error scenarios; each manual run takes 10 minutes. Most efficient approach?",
+    "options": [
+      { "key": "A", "text": "One comprehensive prompt covering all 50 scenarios in one conversation" },
+      { "key": "B", "text": "Test 10 representative scenarios and extrapolate" },
+      { "key": "C", "text": "Hire a QA team to test each manually" },
+      { "key": "D", "text": "Use the Message Batches API: each scenario is a separate request with a mocked tool failure, analyzed programmatically" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Batches let you run all 50 mocked-failure scenarios in parallel and analyze results programmatically — cheap (~50%) and comprehensive. One big prompt (A) can't isolate scenarios; sampling 10 (B) misses edge cases; manual QA (C) is slow and expensive.",
+    "corrected": false
+  },
+  {
+    "id": 282,
+    "category": "Claude API",
+    "text": "An MCP tool generates images and returns base64 data; Claude's descriptions don't match because it can't see the tool output as an image. How should this be architected?",
+    "options": [
+      { "key": "A", "text": "Have Claude describe the image from the original prompt without seeing it" },
+      { "key": "B", "text": "Have the tool return a text description alongside the image" },
+      { "key": "C", "text": "Store the image and return a URL Claude mentions to the user" },
+      { "key": "D", "text": "Include the base64 image in a subsequent message using the image content type so Claude can actually see and describe it" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "To describe a generated image accurately, send it back as an image content block (base64) so Claude's vision can analyze it. Describing from the prompt (A) is unreliable; a tool-side text description (B) is less accurate than direct vision; a URL (C) still doesn't feed the pixels to the model.",
+    "corrected": false
+  },
+  {
+    "id": 283,
+    "category": "Claude Code",
+    "text": "A project's CLAUDE.md has grown to 800 lines and rules in the latter half seem ignored. Recommended approach for managing large CLAUDE.md files?",
+    "options": [
+      { "key": "A", "text": "Delete rules that seem ignored" },
+      { "key": "B", "text": "Increase the context window to process the full file" },
+      { "key": "C", "text": "Convert CLAUDE.md to a compact YAML format" },
+      { "key": "D", "text": "Split into a concise root CLAUDE.md with critical rules, use @import for detailed sections, and use .claude/rules/ for context-specific rules with glob patterns" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Decompose: keep the root file concise with the most important rules, @import detailed sections, and move context-specific rules to glob-scoped rule files so they load only when relevant. Deleting rules (A) loses information; a bigger window (B) and YAML (C) don't fix the attention/organization problem.",
+    "corrected": false
+  },
+  {
+    "id": 284,
+    "category": "Agent SDK & Hooks",
+    "text": "An Agent SDK agent should use the 'search' tool before answering, but often answers from training knowledge despite a system-prompt instruction. Most effective fix?",
+    "options": [
+      { "key": "A", "text": "Force tool_choice to 'search' on the first turn, then switch to 'auto' for subsequent turns" },
+      { "key": "B", "text": "Rewrite the system prompt to be more emphatic ('ALWAYS use search')" },
+      { "key": "C", "text": "Set tool_choice 'any' to force tool use every turn" },
+      { "key": "D", "text": "Add a PreToolUse hook that blocks non-search responses" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Forcing the search tool on the first turn guarantees a search before answering, then 'auto' allows natural follow-ups. Emphatic prompting (B) is unreliable; 'any' (C) forces a tool on every turn including follow-ups; a hook blocking 'non-search responses' (D) operates at the wrong level.",
+    "corrected": false
+  },
+  {
+    "id": 285,
+    "category": "Structured Outputs",
+    "text": "A form has 20 fields but typically only 5–8 are relevant per request; remaining should be null. With all 20 required, Claude hallucinates values for irrelevant fields. What schema design fixes this?",
+    "options": [
+      { "key": "A", "text": "Make all 20 fields nullable with clear descriptions of when each applies" },
+      { "key": "B", "text": "Generate a per-request dynamic schema containing only the fields relevant to that request's context" },
+      { "key": "C", "text": "Keep all fields required but add a confidence field per field" },
+      { "key": "D", "text": "Create 4 schemas for different form types, each with only relevant required fields" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "A dynamic per-request schema includes only the relevant fields, eliminating the chance to hallucinate values for irrelevant ones. (Making all fields nullable (A) is also a strong, simpler pattern — return null instead of guessing — and is defensible.) Required-with-confidence (C) doesn't prevent fabrication; multiple fixed schemas (D) is less flexible than dynamic generation.",
+    "corrected": false
+  },
+  {
+    "id": 286,
+    "category": "Claude API",
+    "text": "Migrating an agent from a 200K-context model (Sonnet 4.5) to a 1M-context model (Sonnet 4.6), besides handling longer documents, what else should you account for?",
+    "options": [
+      { "key": "A", "text": "Pricing per token is identical, so cost only scales with usage" },
+      { "key": "B", "text": "Prompt-caching minimum thresholds can differ between model versions (e.g., Sonnet 4.5 ~1024 vs Sonnet 4.6 ~2048 tokens), affecting your caching strategy" },
+      { "key": "C", "text": "No architecture changes are needed — just update the model parameter" },
+      { "key": "D", "text": "Response quality is identical regardless of context length" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Cache minimums can change across model versions, so breakpoints that worked before may need adjustment; attention behavior over very long contexts can also shift. So it's not 'just change the parameter' (C); pricing and quality aren't guaranteed identical across versions (A, D).",
+    "corrected": false
+  },
+  {
+    "id": 287,
+    "category": "MCP & Tools",
+    "text": "A Salesforce MCP server has 8 tools and Claude occasionally picks the wrong one (e.g., search_contacts vs get_contact_by_id). What improves selection accuracy?",
+    "options": [
+      { "key": "A", "text": "Detailed descriptions differentiating each tool with usage guidance, e.g. 'search_contacts: use to FIND contacts by name/email/company; NOT for retrieving a known contact (use get_contact_by_id)'" },
+      { "key": "B", "text": "Reduce to 4 tools by combining operations" },
+      { "key": "C", "text": "Add a tool_router tool Claude calls first to decide" },
+      { "key": "D", "text": "Rename tools with numbered prefixes (tool1_search, tool2_get)" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Descriptions are the primary selection signal; including positive ('use when…') and negative ('NOT for…') guidance disambiguates similar tools. Merging tools (B) loses needed granularity; a router tool (C) adds indirection; numbered names (D) don't convey semantics.",
+    "corrected": false
+  },
+  {
+    "id": 288,
+    "category": "Claude Code",
+    "text": "What is the default keyboard shortcut to toggle plan mode in Claude Code?",
+    "options": [
+      { "key": "A", "text": "Shift+Tab" },
+      { "key": "B", "text": "Tab to cycle modes" },
+      { "key": "C", "text": "Ctrl+P" },
+      { "key": "D", "text": "Escape" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Shift+Tab toggles plan mode (where Claude outlines its approach before executing). The other shortcuts don't toggle plan mode.",
+    "corrected": false
+  },
+  {
+    "id": 289,
+    "category": "Evaluation",
+    "text": "An eval framework should measure whether the agent asks for clarification on ambiguous requests rather than assuming. What metric captures this?",
+    "options": [
+      { "key": "A", "text": "Response accuracy — whether final answers are correct" },
+      { "key": "B", "text": "Clarification rate — the percentage of ambiguous inputs where the agent asks for clarification, measured against a labeled set of inputs that require it" },
+      { "key": "C", "text": "Response time — faster responses imply assumptions" },
+      { "key": "D", "text": "Token efficiency — fewer tokens imply decisiveness" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "A clarification-rate metric against a labeled set of genuinely-ambiguous inputs directly measures whether the agent appropriately seeks clarification. Accuracy (A), response time (C), and token efficiency (D) measure other things and don't capture clarification behavior.",
+    "corrected": false
+  },
+  {
+    "id": 290,
+    "category": "Structured Outputs",
+    "text": "Claude must generate JSON config files that include comments explaining each option, but JSON doesn't support comments. Best structured-output approach?",
+    "options": [
+      { "key": "A", "text": "Use a json_object mode that allows comments" },
+      { "key": "B", "text": "Use YAML mode for comment support" },
+      { "key": "C", "text": "Generate JSON and comments in separate API calls" },
+      { "key": "D", "text": "Use a schema with parallel fields: each option has a value and a comment, e.g. {port: {value: 8080, comment: 'Server listening port'}}" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "A parallel value+comment schema captures both the configuration and its documentation in valid JSON; the app can then render any final format (JSON5/YAML/docs). There's no comment-allowing json_object mode (A) or YAML structured-output mode (B); separate calls (C) lose the value-to-comment association.",
+    "corrected": false
+  },
+  {
+    "id": 291,
+    "category": "Multi-Agent Systems",
+    "text": "Multiple Claude agents share information via a central message bus (metadata, status, data payloads). What is the key consideration for the message format?",
+    "options": [
+      { "key": "A", "text": "A consistent structured format each consuming agent can parse without extra tool calls, with clear metadata for routing and versioning" },
+      { "key": "B", "text": "Plain text for maximum compatibility" },
+      { "key": "C", "text": "Different formats per agent pair for efficiency" },
+      { "key": "D", "text": "Let each agent define its own preferred input format" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "A standardized structured format with routing/versioning metadata lets agents consume messages without translation. Plain text (B) lacks structure; per-pair formats (C) and per-agent formats (D) create incompatibilities and complexity.",
+    "corrected": false
+  },
+  {
+    "id": 292,
+    "category": "Claude Code",
+    "text": "A project uses both JavaScript (Prettier) and Rust (rustfmt). How should CLAUDE.md handle the dual-language formatting setup?",
+    "options": [
+      { "key": "A", "text": "Both conventions in the root CLAUDE.md with section headers" },
+      { "key": "B", "text": "Separate CLAUDE.md files in js/ and rust/ directories" },
+      { "key": "C", "text": "Glob-scoped rule files: one matching **/*.js,**/*.ts for Prettier rules, another matching **/*.rs for rustfmt rules" },
+      { "key": "D", "text": "Rely on the formatters and don't include formatting rules in CLAUDE.md" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Glob-scoped rules auto-load the right formatting rules based on the file being edited (Prettier for JS/TS, rustfmt for Rust), cleaner than mixing in one file and working even outside dedicated directories. A single root file (A) mixes rules; per-directory files (B) require being in those dirs; omitting rules (D) misses the chance to guide generation.",
+    "corrected": false
+  },
+  {
+    "id": 293,
+    "category": "Prompt Caching",
+    "text": "A developer finds 60% of API cost is input tokens (mostly repeated context), 15% output, 25% thinking. Which optimization gives the biggest cost reduction?",
+    "options": [
+      { "key": "A", "text": "Reduce output length to save on the 15% output cost" },
+      { "key": "B", "text": "Reduce thinking budget to save on the 25% thinking cost" },
+      { "key": "C", "text": "Switch to a smaller model" },
+      { "key": "D", "text": "Implement prompt caching to cut the 60% input cost — cache reads cost ~10% of base input price" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Caching targets the largest cost component (60% input) and cuts the cached portion by ~90%, the highest-impact optimization. Reducing output (A) or thinking (B) targets smaller components; a smaller model (C) requires a quality tradeoff.",
+    "corrected": false
+  },
+  {
+    "id": 294,
+    "category": "MCP & Tools",
+    "text": "A Kubernetes MCP tool exposes high-impact operations (scale_deployment, delete_pod, drain_node) that should require confirmation. How should the tool design handle dangerous operations?",
+    "options": [
+      { "key": "A", "text": "Prefix descriptions with 'DANGEROUS:' and rely on Claude to warn the user" },
+      { "key": "B", "text": "Put dangerous tools on a separate MCP server requiring admin credentials" },
+      { "key": "C", "text": "Require the user to type 'CONFIRM' before each dangerous operation" },
+      { "key": "D", "text": "Two-phase execution: the first call returns a preview (dry run), and execution requires a second call with a confirmation token" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "Two-phase execution (preview → confirm with a token) is a deterministic safety layer that shows impact before anything happens and doesn't rely on the model for safety. Description prefixes (A) and typed confirmations (C) are prompt-level; a separate server (B) adds infrastructure but doesn't itself add the preview/confirm gate.",
+    "corrected": false
+  },
+  {
+    "id": 295,
+    "category": "Claude API",
+    "text": "Streaming a response, you want a 'typing' indicator while thinking blocks generate, switching to text display when the response text starts. Which streaming events signal this transition?",
+    "options": [
+      { "key": "A", "text": "A 'phase_change' event indicates the switch" },
+      { "key": "B", "text": "content_block_stop for the thinking block, followed by content_block_start for the text block, signals the transition" },
+      { "key": "C", "text": "message_delta includes a 'current_phase' field" },
+      { "key": "D", "text": "Thinking and text generation use separate streaming connections" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["B"],
+    "explanation": "Block boundaries are delineated by content_block_stop (thinking ends) and content_block_start (text begins), so the client switches UI state on those events. There's no phase_change event (A) or current_phase field (C), and it's all one stream (D).",
+    "corrected": false
+  },
+  {
+    "id": 296,
+    "category": "Agent Design",
+    "text": "An agent serves a multi-language base (English, Spanish, Japanese). The system prompt and tool results are in English; when a customer writes Japanese, the agent should respond in Japanese. How should translation be handled?",
+    "options": [
+      { "key": "A", "text": "Keep the system prompt and tools in English — Claude understands the English config/results and naturally responds in the customer's detected language" },
+      { "key": "B", "text": "Translate the system prompt into each language and use the matching one per request" },
+      { "key": "C", "text": "Use a translation MCP tool to convert everything to the customer's language first" },
+      { "key": "D", "text": "Create separate agent configurations per language" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["A"],
+    "explanation": "Claude understands English-language configuration and tool output and naturally mirrors the customer's language in its reply, so no translation infrastructure is needed. Per-language prompts (B) and per-language configs (D) are unnecessary maintenance; a translation tool (C) adds latency and cost.",
+    "corrected": false
+  },
+  {
+    "id": 297,
+    "category": "Agent SDK & Hooks",
+    "text": "A team wants observability — logging each tool call's timing, inputs, outputs, and errors — in an Agent SDK app. Where should logging be implemented?",
+    "options": [
+      { "key": "A", "text": "In the system prompt: 'log every tool call with parameters and timing'" },
+      { "key": "B", "text": "Enable a debug mode in the Agent SDK for automatic logging" },
+      { "key": "C", "text": "Wrap each tool handler with a logging decorator capturing inputs, outputs, timing, and errors before returning results" },
+      { "key": "D", "text": "Add a 'log' tool Claude calls after every operation" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "Logging decorators around tool handlers capture comprehensive observability transparently, without affecting agent behavior. A prompt instruction (A) relies on the model to log; SDK debug mode (B) may lack the needed granularity; a 'log' tool (D) wastes tool-call tokens and is unreliable.",
+    "corrected": false
+  },
+  {
+    "id": 298,
+    "category": "Prompting",
+    "text": "A system prompt says 'always respond in formal English'; a user says 'talk to me casually bro.' Per Claude's instruction hierarchy, what is the expected behavior?",
+    "options": [
+      { "key": "A", "text": "User instructions always override the system prompt" },
+      { "key": "B", "text": "Claude averages the two into semi-formal language" },
+      { "key": "C", "text": "System-prompt instructions take precedence — Claude maintains formal English" },
+      { "key": "D", "text": "The most recent instruction wins regardless of source" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "The system prompt (operator/developer) ranks above user instructions, so a conflicting user request doesn't override the developer's formal-English constraint. User-always-wins (A) inverts the hierarchy; averaging (B) and most-recent-wins (D) don't reflect the actual precedence.",
+    "corrected": false
+  },
+  {
+    "id": 299,
+    "category": "Evaluation",
+    "text": "A document-review agent processes hundreds of contracts daily, each producing a structured report. The team wants continuous quality monitoring to detect drift. What evaluation architecture supports this?",
+    "options": [
+      { "key": "A", "text": "Randomly sample 5% of reviews for weekly human evaluation" },
+      { "key": "B", "text": "Run every review through a second Claude evaluation pass scoring quality" },
+      { "key": "C", "text": "Compare each review's structure to a template and flag deviations" },
+      { "key": "D", "text": "A combination: automated structural checks on 100% of reviews, LLM-based evaluation on a ~10% sample, and human review of flagged outliers" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["D"],
+    "explanation": "A tiered approach gives broad and deep coverage: fast structural checks on everything, deeper LLM evaluation on a sample, and human review for outliers/calibration — catching different issue types affordably. Sampling alone (A) is sparse; LLM-on-everything (B) is expensive; structural-only (C) misses semantic quality.",
+    "corrected": false
+  },
+  {
+    "id": 300,
+    "category": "Agent Design",
+    "text": "Doing a final pre-production review of an agent system, which of the following is NOT a recommended reliability check?",
+    "options": [
+      { "key": "A", "text": "Verify all safety-critical rules are enforced via hooks/code rather than only via prompts" },
+      { "key": "B", "text": "Confirm rate limiting and circuit breakers are configured for all external tool calls" },
+      { "key": "C", "text": "Ensure 100% test coverage of all possible user input combinations" },
+      { "key": "D", "text": "Validate that compaction preserves critical state via custom instructions" }
+    ],
+    "answerCount": 1,
+    "correctAnswer": ["C"],
+    "explanation": "100% coverage of all possible input combinations is impossible for open-ended natural-language input and is NOT a real recommendation — so it's the odd one out. Enforcing safety-critical rules in code (A), configuring rate limiting/circuit breakers (B), and validating compaction preserves state (D) are all sound pre-deployment checks. (The source dump marked D as the answer, which is wrong — D is a legitimate check; C is the non-recommendation.)",
+    "corrected": true
   }
 ]
