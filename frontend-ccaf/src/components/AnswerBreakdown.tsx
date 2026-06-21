@@ -39,41 +39,43 @@ export function AnswerBreakdown({ question, progress }: AnswerBreakdownProps) {
       <div className="breakdown-options">
         <h3>Explanation</h3>
 
-        {question.explanation ? (
-          /* Single per-question explanation (CCA-F deck). */
-          <>
-            {question.corrected && (
-              <p className="corrected-note">
-                ✎ Corrected from the source dump (its stated answer/explanation
-                was wrong or self-contradicting here).
-              </p>
-            )}
-            <p className="breakdown-explanation">{question.explanation}</p>
-          </>
-        ) : (
-          /* Per-option explanations (PCA deck). */
-          question.options.map((option) => {
-            const isCorrect = question.correctAnswer.includes(option.key);
-            const wasSelected = selected.includes(option.key);
-            return (
-              <div
-                key={option.key}
-                className={`breakdown-option ${isCorrect ? 'is-correct' : 'is-incorrect'}`}
-              >
-                <div className="breakdown-option-header">
-                  <span className="breakdown-option-icon" aria-hidden="true">
-                    {isCorrect ? '✓' : '✗'}
-                  </span>
-                  <span className="breakdown-option-key">{option.key}.</span>
-                  <span className="breakdown-option-text">{option.text}</span>
-                  {wasSelected && <span className="breakdown-option-tag">Your choice</span>}
+        {question.corrected && (
+          <p className="corrected-note">
+            ✎ Corrected from the source dump (its stated answer/explanation
+            was wrong or self-contradicting here).
+          </p>
+        )}
+
+        {question.optionExplanations ? (
+          /* Per-option explanations (PCA deck, and CCA-F deck after conversion). */
+          (() => {
+            const optionExplanations = question.optionExplanations;
+            return question.options.map((option) => {
+              const isCorrect = question.correctAnswer.includes(option.key);
+              const wasSelected = selected.includes(option.key);
+              return (
+                <div
+                  key={option.key}
+                  className={`breakdown-option ${isCorrect ? 'is-correct' : 'is-incorrect'}`}
+                >
+                  <div className="breakdown-option-header">
+                    <span className="breakdown-option-icon" aria-hidden="true">
+                      {isCorrect ? '✓' : '✗'}
+                    </span>
+                    <span className="breakdown-option-key">{option.key}.</span>
+                    <span className="breakdown-option-text">{option.text}</span>
+                    {wasSelected && <span className="breakdown-option-tag">Your choice</span>}
+                  </div>
+                  <p className="breakdown-option-explanation">
+                    {optionExplanations[option.key]}
+                  </p>
                 </div>
-                <p className="breakdown-option-explanation">
-                  {question.optionExplanations?.[option.key]}
-                </p>
-              </div>
-            );
-          })
+              );
+            });
+          })()
+        ) : (
+          /* Fallback: single per-question explanation. */
+          <p className="breakdown-explanation">{question.explanation}</p>
         )}
       </div>
     </div>
