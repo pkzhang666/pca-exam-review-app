@@ -10,12 +10,9 @@ export interface Question {
   options: QuestionOption[];
   answerCount: number;
   correctAnswer: string[];
-  // Per-option explanations (PCA deck). Optional — the CCA-F deck uses the
-  // single `explanation` field below instead.
+  // Per-option explanations, keyed by option key. Preferred rendering path.
   optionExplanations?: Record<string, string>;
-  // Single per-question explanation covering all options. When present, the UI
-  // renders this instead of the per-option map (CCA-F source gives one
-  // explanation per question).
+  // Fallback single explanation, used only when optionExplanations is absent.
   explanation?: string;
   // True when the answer/explanation was corrected away from the source dump
   // (which had many wrong or self-contradicting answers).
